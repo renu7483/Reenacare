@@ -1,0 +1,1585 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>ReenaCare</title>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/react/18.2.0/umd/react.production.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/react-dom/18.2.0/umd/react-dom.production.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/babel-standalone/7.23.2/babel.min.js"></script>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;1,300;1,400&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet"/>
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{--rose:#c4768e;--deep:#7a3f55;--text:#3d2030;--muted:#9a7080;--bg:linear-gradient(160deg,#f5e8f0 0%,#efe0e8 40%,#fce8d8 100%);--card:rgba(255,255,255,0.88)}
+body{font-family:'DM Sans',sans-serif;background:var(--bg);min-height:100vh}
+input,select,textarea,button{font-family:'DM Sans',sans-serif}
+*,*::before,*::after{box-sizing:border-box}
+
+/* AUTH */
+.auth-wrap{min-height:100vh;display:grid;grid-template-columns:1fr 1fr}
+.auth-left{background:linear-gradient(145deg,#f5dce4,#e8c5d0 40%,#d4a0b5);display:flex;flex-direction:column;align-items:center;justify-content:center;padding:60px 50px;position:relative;overflow:hidden}
+.auth-left::after{content:'🌸';position:absolute;font-size:200px;opacity:.07;bottom:-30px;right:-30px;transform:rotate(-15deg)}
+.auth-brand{font-family:'Cormorant Garamond',serif;font-size:3.8rem;font-weight:300;color:var(--deep);text-align:center;position:relative;z-index:2}
+.auth-brand span{font-style:italic;opacity:.75}
+.auth-tagline{font-size:.82rem;color:var(--deep);opacity:.65;text-align:center;margin-top:10px;position:relative;z-index:2;letter-spacing:3px;text-transform:uppercase}
+.auth-quote{font-family:'Cormorant Garamond',serif;font-size:1.2rem;font-style:italic;color:var(--deep);text-align:center;opacity:.75;margin-top:48px;max-width:340px;line-height:1.6;position:relative;z-index:2}
+.auth-features{margin-top:40px;position:relative;z-index:2;display:flex;flex-direction:column;gap:12px}
+.auth-feature{display:flex;align-items:center;gap:10px;font-size:.85rem;color:var(--deep);opacity:.8}
+.auth-right{background:#fdf8f5;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:60px 50px}
+.auth-form{width:100%;max-width:400px}
+.auth-tabs{display:flex;margin-bottom:32px;background:#f0e6ea;border-radius:12px;padding:4px}
+.auth-tab{flex:1;padding:10px;text-align:center;border-radius:9px;cursor:pointer;font-size:.88rem;font-weight:500;color:var(--muted);transition:all .2s;border:none;background:transparent}
+.auth-tab.active{background:white;color:var(--deep);box-shadow:0 2px 8px rgba(122,63,85,.1)}
+.auth-title{font-family:'Cormorant Garamond',serif;font-size:2rem;color:var(--deep);margin-bottom:6px}
+.auth-sub{font-size:.86rem;color:var(--muted);margin-bottom:26px}
+.rc-input{width:100%;padding:13px 16px;border:1.5px solid #e2cfd5;border-radius:12px;font-size:.95rem;color:var(--text);background:white;outline:none;transition:border-color .2s;margin-bottom:13px;display:block}
+.rc-input:focus{border-color:var(--rose)}
+.input-wrap{position:relative}
+.input-wrap .rc-input{padding-right:42px}
+.eye-btn{position:absolute;right:13px;top:16px;background:none;border:none;cursor:pointer;color:var(--muted);font-size:1rem;padding:0}
+.error-box{background:#ffeef2;border:1px solid #f5c0c8;border-radius:10px;padding:11px 14px;font-size:.84rem;color:#c0485a;margin-bottom:14px;line-height:1.5}
+.success-box{background:#eefff5;border:1px solid #b0f0cb;border-radius:10px;padding:11px 14px;font-size:.84rem;color:#1a7a45;margin-bottom:14px}
+.btn-rose{padding:14px 30px;background:linear-gradient(135deg,#c4768e,#7a3f55);color:white;border:none;border-radius:50px;font-size:.93rem;font-weight:500;cursor:pointer;box-shadow:0 4px 18px rgba(122,63,85,.28);transition:transform .2s;display:inline-flex;align-items:center;justify-content:center;gap:7px;width:100%}
+.btn-rose:hover{transform:translateY(-2px)}
+.btn-rose:disabled{opacity:.6;cursor:not-allowed;transform:none}
+.btn-outline{padding:12px 24px;background:transparent;color:var(--deep);border:1.5px solid rgba(196,118,142,.38);border-radius:50px;font-size:.9rem;cursor:pointer;transition:all .2s;display:inline-flex;align-items:center;gap:7px}
+.btn-outline:hover{border-color:var(--rose);background:rgba(196,118,142,.07)}
+.divider{display:flex;align-items:center;gap:12px;margin:18px 0}
+.divider-line{flex:1;height:1px;background:#e2cfd5}
+.divider-text{font-size:.75rem;color:var(--muted);text-transform:uppercase;letter-spacing:1px}
+.google-btn{width:100%;padding:12px;background:white;border:1.5px solid #e2cfd5;border-radius:12px;font-size:.93rem;color:var(--text);cursor:pointer;display:flex;align-items:center;justify-content:center;gap:9px;transition:border-color .2s}
+.google-btn:hover{border-color:var(--rose)}
+.forgot{text-align:right;font-size:.78rem;color:var(--rose);cursor:pointer;margin-bottom:16px;display:block}
+.auth-footer{text-align:center;font-size:.8rem;color:var(--muted);margin-top:20px}
+.auth-footer a{color:var(--rose);cursor:pointer}
+.strength{display:flex;gap:4px;margin-bottom:8px;margin-top:-8px}
+.strength-bar{flex:1;height:3px;border-radius:2px;background:#e2cfd5;transition:background .3s}
+.strength-bar.weak{background:#e55}
+.strength-bar.fair{background:#fa0}
+.strength-bar.strong{background:#4c4}
+.strength-label{font-size:.72rem;color:var(--muted);margin-bottom:10px}
+
+/* NAV */
+.rc-nav{position:sticky;top:0;padding:12px 28px;display:flex;align-items:center;justify-content:space-between;background:rgba(255,255,255,.85);backdrop-filter:blur(14px);border-bottom:1px solid rgba(196,118,142,.15);z-index:100}
+.rc-brand{font-family:'Cormorant Garamond',serif;font-size:1.65rem;font-weight:300;color:var(--deep)}
+.rc-brand span{color:var(--rose);font-style:italic}
+.nav-links{display:flex;gap:4px;align-items:center;flex-wrap:wrap}
+.nav-btn{padding:7px 12px;border-radius:50px;font-size:.78rem;color:var(--text);background:transparent;border:none;cursor:pointer;transition:background .2s,color .2s;white-space:nowrap}
+.nav-btn:hover{background:rgba(196,118,142,.13)}
+.nav-btn.active{background:var(--rose);color:white}
+.nav-avatar{width:34px;height:34px;border-radius:50%;background:linear-gradient(135deg,#e8c5d0,#c4768e);display:flex;align-items:center;justify-content:center;font-size:.85rem;color:white;font-weight:600;cursor:pointer;margin-left:6px;border:2px solid white;box-shadow:0 2px 8px rgba(122,63,85,.15);position:relative;flex-shrink:0}
+.user-menu{position:absolute;top:44px;right:0;background:white;border-radius:14px;box-shadow:0 8px 30px rgba(122,63,85,.14);padding:8px;min-width:200px;z-index:200;border:1px solid rgba(196,118,142,.12)}
+.user-menu-name{padding:10px 12px 6px;font-size:.82rem;color:var(--muted);border-bottom:1px solid #f0e6ea;margin-bottom:4px}
+.user-menu-name strong{display:block;color:var(--deep);font-size:.93rem}
+.user-menu-item{padding:9px 12px;border-radius:9px;font-size:.85rem;color:var(--text);cursor:pointer;display:flex;align-items:center;gap:8px;transition:background .15s}
+.user-menu-item:hover{background:#fdf0f4}
+.user-menu-item.danger{color:#c0485a}
+.user-menu-item.danger:hover{background:#ffeef2}
+.lang-switcher{display:flex;gap:4px;background:#f0e6ea;border-radius:20px;padding:3px}
+.lang-btn{padding:5px 10px;border-radius:16px;border:none;background:transparent;font-size:.75rem;cursor:pointer;color:var(--muted);transition:all .2s}
+.lang-btn.active{background:var(--rose);color:white}
+
+/* PAGES */
+.rc-page{padding:32px 24px 60px;max-width:900px;margin:0 auto}
+.rc-page-header{text-align:center;margin-bottom:40px}
+.rc-label{font-size:.76rem;letter-spacing:4px;text-transform:uppercase;color:var(--rose);margin-bottom:8px}
+.rc-page-title{font-family:'Cormorant Garamond',serif;font-size:2.8rem;font-weight:300;color:var(--deep);margin-bottom:8px}
+.rc-page-sub{font-size:.93rem;color:var(--muted)}
+.rc-card{background:var(--card);backdrop-filter:blur(10px);border:1px solid rgba(255,255,255,.9);border-radius:20px;padding:28px;box-shadow:0 4px 24px rgba(122,63,85,.07);margin-bottom:20px}
+.rc-card-title{font-family:'Cormorant Garamond',serif;font-size:1.45rem;color:var(--deep);margin-bottom:18px;display:flex;align-items:center;gap:8px}
+.form-label{display:block;font-size:.77rem;font-weight:500;color:var(--muted);text-transform:uppercase;letter-spacing:1px;margin-bottom:7px}
+.form-group{margin-bottom:18px}
+.rc-select{width:100%;padding:12px 14px;border:1.5px solid #e2cfd5;border-radius:10px;font-size:.93rem;color:var(--text);background:white;outline:none;transition:border-color .2s}
+.rc-select:focus{border-color:var(--rose)}
+
+/* HERO */
+.rc-hero{min-height:calc(100vh - 60px);display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:60px 24px;position:relative;overflow:hidden}
+.rc-orb{position:fixed;border-radius:50%;filter:blur(70px);opacity:.25;pointer-events:none;animation:rcDrift 9s ease-in-out infinite}
+.rc-orb1{width:380px;height:380px;background:#e8c5d5;top:-80px;right:-80px}
+.rc-orb2{width:280px;height:280px;background:#c5d5e8;bottom:80px;left:-60px;animation-delay:3s}
+.rc-orb3{width:220px;height:220px;background:#d5e8c5;top:40%;left:55%;animation-delay:1.5s}
+@keyframes rcDrift{0%,100%{transform:translate(0,0) scale(1)}50%{transform:translate(18px,-18px) scale(1.04)}}
+.rc-greeting{font-size:.85rem;letter-spacing:4px;text-transform:uppercase;color:var(--rose);margin-bottom:18px}
+.rc-hero-title{font-family:'Cormorant Garamond',serif;font-size:clamp(2.8rem,8vw,5.5rem);font-weight:300;color:var(--deep);line-height:1.1;margin-bottom:22px}
+.rc-hero-title em{font-style:italic;color:var(--rose)}
+.rc-hero-sub{font-size:1.1rem;color:var(--muted);max-width:580px;line-height:1.7;font-weight:300;margin-bottom:44px}
+.cta-group{display:flex;gap:14px;flex-wrap:wrap;justify-content:center}
+.aff-section{padding:60px 24px;text-align:center}
+.section-title{font-family:'Cormorant Garamond',serif;font-size:2.2rem;font-weight:300;color:var(--deep);margin-bottom:40px}
+.aff-card{background:rgba(255,255,255,.78);border:1px solid rgba(196,118,142,.18);border-radius:24px;padding:46px 54px;max-width:680px;margin:0 auto;min-height:160px;display:flex;align-items:center;justify-content:center}
+.aff-text{font-family:'Cormorant Garamond',serif;font-size:1.8rem;font-style:italic;color:var(--text);line-height:1.5;transition:opacity .4s}
+.aff-text.fading{opacity:0}
+.aff-nav{display:flex;justify-content:center;gap:7px;margin-top:20px}
+.dot{width:8px;height:8px;border-radius:50%;background:rgba(196,118,142,.28);cursor:pointer;border:none;transition:all .2s}
+.dot.active{background:var(--rose);width:24px;border-radius:4px}
+.features{padding:20px 24px 60px;max-width:900px;margin:0 auto}
+.features-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:16px}
+.feature-card{background:rgba(255,255,255,.82);border:1px solid rgba(255,255,255,.9);border-radius:20px;padding:24px;cursor:pointer;transition:transform .25s,box-shadow .25s;border-top:3px solid transparent}
+.feature-card:hover{transform:translateY(-4px);box-shadow:0 12px 36px rgba(122,63,85,.11);border-top-color:var(--rose)}
+.feature-icon{font-size:2.3rem;margin-bottom:12px}
+.feature-name{font-family:'Cormorant Garamond',serif;font-size:1.3rem;color:var(--deep);margin-bottom:6px}
+.feature-desc{font-size:.83rem;color:var(--muted);line-height:1.6}
+
+/* TRACKER */
+.tracker-grid{display:grid;grid-template-columns:1fr 1fr;gap:20px;margin-bottom:24px}
+.ring-wrap{text-align:center;padding:24px;display:flex;flex-direction:column;align-items:center;justify-content:center;height:100%}
+.ring-container{position:relative;width:150px;height:150px;margin:0 auto 14px}
+.ring-svg{transform:rotate(-90deg)}
+.ring-days{font-family:'Cormorant Garamond',serif;font-size:2.4rem;color:var(--deep);line-height:1}
+.ring-label{font-size:.68rem;color:var(--muted);text-transform:uppercase;letter-spacing:1px}
+.ring-text{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);text-align:center}
+.result-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:14px;margin-bottom:22px}
+.result-pill{background:white;border-radius:16px;padding:18px;text-align:center;border:1px solid rgba(196,118,142,.13)}
+.result-pill .val{font-family:'Cormorant Garamond',serif;font-size:1.4rem;color:var(--deep)}
+.result-pill .key{font-size:.73rem;color:var(--muted);text-transform:uppercase;letter-spacing:1px;margin-top:3px}
+.result-pill .ico{font-size:1.6rem;margin-bottom:6px}
+.cal-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:3px}
+.cal-day-name{text-align:center;font-size:.7rem;color:var(--muted);font-weight:500;padding:4px 0}
+.cal-day{text-align:center;padding:7px 3px;border-radius:8px;font-size:.83rem}
+.cal-day.today{background:rgba(196,118,142,.14);color:var(--rose);font-weight:500}
+.cal-day.period{background:var(--rose);color:white;border-radius:50%}
+.cal-day.fertile{background:rgba(100,180,150,.25);color:#2d7a5a}
+.cal-day.ovulation{background:#9b59b6;color:white;border-radius:50%}
+.cal-legend{display:flex;gap:14px;flex-wrap:wrap;margin-top:10px;font-size:.76rem;color:var(--muted)}
+.legend-dot{width:9px;height:9px;border-radius:50%;display:inline-block;margin-right:4px}
+.tip-box{background:linear-gradient(135deg,rgba(196,118,142,.09),rgba(122,63,85,.04));border:1px solid rgba(196,118,142,.18);border-radius:14px;padding:16px 20px;margin-top:18px;font-size:.86rem;color:var(--text);line-height:1.7}
+.tip-box strong{color:var(--rose)}
+
+/* SYMPTOMS */
+.symptom-grid{display:flex;flex-wrap:wrap;gap:9px}
+.symptom-pill{padding:9px 16px;background:white;border:1.5px solid #e2cfd5;border-radius:50px;font-size:.86rem;cursor:pointer;transition:all .2s;user-select:none}
+.symptom-pill.selected{background:var(--rose);color:white;border-color:var(--rose)}
+.mood-grid{display:flex;gap:10px;flex-wrap:wrap}
+.mood-option{text-align:center;cursor:pointer;padding:11px 14px;border-radius:14px;border:1.5px solid #e2cfd5;background:white;transition:all .2s;min-width:66px}
+.mood-option.selected{border-color:var(--rose);background:rgba(196,118,142,.1)}
+.mood-name{font-size:.7rem;color:var(--muted);margin-top:3px}
+.mood-option.selected .mood-name{color:var(--rose)}
+.care-message{background:linear-gradient(135deg,rgba(196,118,142,.11),rgba(122,63,85,.05));border-left:3px solid var(--rose);border-radius:0 16px 16px 0;padding:18px 22px;margin-bottom:20px;font-family:'Cormorant Garamond',serif;font-size:1.2rem;font-style:italic;color:var(--text);line-height:1.6}
+.care-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+.care-card{background:white;border-radius:14px;padding:18px;border:1px solid rgba(196,118,142,.1)}
+.care-card-title{font-weight:600;font-size:.82rem;color:var(--deep);margin-bottom:10px;text-transform:uppercase;letter-spacing:.5px}
+.care-items{list-style:none}
+.care-items li{font-size:.86rem;color:var(--text);padding:5px 0;border-bottom:1px solid #f5ecf0;line-height:1.5;display:flex;gap:7px}
+.care-items li:last-child{border-bottom:none}
+.care-items li::before{content:'✦';color:var(--rose);flex-shrink:0;font-size:.68rem;margin-top:3px}
+.aff-banner{background:linear-gradient(135deg,#7a3f55,#c4768e);color:white;border-radius:16px;padding:22px;text-align:center;margin-top:8px}
+.aff-banner .af-text{font-family:'Cormorant Garamond',serif;font-size:1.45rem;font-style:italic;line-height:1.4}
+.aff-banner .af-sub{font-size:.77rem;opacity:.7;margin-top:7px;text-transform:uppercase;letter-spacing:2px}
+
+/* ── CHAT – fully rebuilt ── */
+.chat-page{display:flex;flex-direction:column;height:calc(100vh - 58px);max-width:740px;margin:0 auto;padding:0 20px}
+.chat-topbar{flex-shrink:0;display:flex;align-items:center;gap:14px;padding:14px 0 10px;border-bottom:1px solid rgba(196,118,142,.12)}
+.chat-avatar-big{width:48px;height:48px;border-radius:50%;background:linear-gradient(135deg,#e8c5d0,#c4768e);display:flex;align-items:center;justify-content:center;font-size:1.4rem;flex-shrink:0}
+.chat-info{flex:1}
+.chat-name{font-family:'Cormorant Garamond',serif;font-size:1.25rem;color:var(--deep)}
+.chat-status{font-size:.75rem;color:var(--muted);display:flex;align-items:center;gap:5px;margin-top:2px}
+.status-dot{width:7px;height:7px;background:#4caf50;border-radius:50%;animation:pulse 2s ease infinite}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.4}}
+.chat-lang-pill{display:flex;gap:3px;background:#f0e6ea;border-radius:20px;padding:3px}
+.chat-lang-btn{padding:4px 10px;border-radius:14px;border:none;background:transparent;font-size:.72rem;cursor:pointer;color:var(--muted);transition:all .2s}
+.chat-lang-btn.active{background:var(--rose);color:white}
+.messages-area{flex:1;overflow-y:auto;padding:14px 0;display:flex;flex-direction:column;gap:14px}
+.messages-area::-webkit-scrollbar{width:3px}
+.messages-area::-webkit-scrollbar-thumb{background:rgba(196,118,142,.3);border-radius:3px}
+.msg-row{display:flex;gap:9px;align-items:flex-end;max-width:85%;animation:msgIn .3s ease}
+@keyframes msgIn{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
+.msg-row.user{margin-left:auto;flex-direction:row-reverse}
+.msg-ava{width:30px;height:30px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:.9rem;flex-shrink:0;background:linear-gradient(135deg,#e8c5d0,#c4768e)}
+.msg-row.user .msg-ava{background:linear-gradient(135deg,#c4768e,#7a3f55)}
+.msg-bub{padding:11px 15px;border-radius:16px;font-size:.91rem;line-height:1.65;word-break:break-word}
+.msg-row.reena .msg-bub{background:rgba(255,255,255,.95);color:var(--text);border-radius:4px 16px 16px 16px;box-shadow:0 2px 8px rgba(122,63,85,.08)}
+.msg-row.user .msg-bub{background:linear-gradient(135deg,#c4768e,#7a3f55);color:white;border-radius:16px 4px 16px 16px}
+.msg-time{font-size:.64rem;color:var(--muted);margin-top:3px;padding:0 4px}
+.msg-row.user .msg-time{text-align:right}
+.typing-row{display:flex;gap:9px;align-items:flex-end}
+.typing-bub{padding:12px 16px;background:rgba(255,255,255,.95);border-radius:4px 16px 16px 16px;box-shadow:0 2px 8px rgba(122,63,85,.08);display:flex;gap:5px;align-items:center}
+.t-dot{width:7px;height:7px;background:var(--rose);border-radius:50%;animation:tdot 1.2s ease infinite}
+.t-dot:nth-child(2){animation-delay:.2s}
+.t-dot:nth-child(3){animation-delay:.4s}
+@keyframes tdot{0%,80%,100%{transform:translateY(0)}40%{transform:translateY(-7px)}}
+.quick-chips{flex-shrink:0;display:flex;gap:7px;flex-wrap:wrap;padding:8px 0 4px}
+.quick-chip{padding:7px 14px;background:rgba(255,255,255,.85);border:1px solid rgba(196,118,142,.3);border-radius:50px;font-size:.78rem;color:var(--text);cursor:pointer;transition:all .2s;white-space:nowrap}
+.quick-chip:hover{border-color:var(--rose);color:var(--rose)}
+.chat-inputbar{flex-shrink:0;padding:8px 0 18px;display:flex;gap:9px;align-items:flex-end}
+.chat-textarea{flex:1;padding:11px 16px;background:rgba(255,255,255,.9);border:1.5px solid rgba(196,118,142,.25);border-radius:22px;font-size:.92rem;color:var(--text);resize:none;outline:none;max-height:100px;transition:border-color .2s;line-height:1.5}
+.chat-textarea:focus{border-color:var(--rose)}
+.send-btn{width:42px;height:42px;background:linear-gradient(135deg,#c4768e,#7a3f55);border:none;border-radius:50%;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:transform .2s;flex-shrink:0}
+.send-btn:hover{transform:scale(1.07)}
+.send-btn:disabled{opacity:.45;cursor:not-allowed;transform:none}
+
+/* HEALTH SUMMARY */
+.summary-grid{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:20px}
+.summary-stat{background:white;border-radius:16px;padding:20px;text-align:center;border:1px solid rgba(196,118,142,.12)}
+.summary-stat .sv{font-family:'Cormorant Garamond',serif;font-size:2rem;color:var(--deep)}
+.summary-stat .sk{font-size:.74rem;color:var(--muted);text-transform:uppercase;letter-spacing:1px;margin-top:4px}
+.log-entry{background:white;border-radius:14px;padding:16px 18px;border:1px solid rgba(196,118,142,.1);margin-bottom:10px;display:flex;align-items:flex-start;gap:12px}
+.log-date-badge{background:linear-gradient(135deg,#f5dce4,#e8c5d0);border-radius:10px;padding:8px 12px;text-align:center;flex-shrink:0;min-width:52px}
+.log-date-badge .ld{font-family:'Cormorant Garamond',serif;font-size:1.4rem;color:var(--deep);line-height:1}
+.log-date-badge .lm{font-size:.68rem;color:var(--muted);text-transform:uppercase}
+.log-body{flex:1}
+.log-title{font-weight:600;font-size:.9rem;color:var(--deep);margin-bottom:4px}
+.log-chips{display:flex;flex-wrap:wrap;gap:5px;margin-top:6px}
+.log-chip{padding:3px 10px;background:#f5ecf0;border-radius:20px;font-size:.75rem;color:var(--deep)}
+.log-mood-badge{padding:3px 10px;background:rgba(196,118,142,.12);border-radius:20px;font-size:.75rem;color:var(--deep);margin-left:auto;flex-shrink:0}
+.add-log-form{background:white;border-radius:18px;padding:24px;border:1px solid rgba(196,118,142,.15);margin-bottom:24px}
+.rc-textarea{width:100%;padding:12px 14px;border:1.5px solid #e2cfd5;border-radius:10px;font-size:.93rem;color:var(--text);background:white;outline:none;resize:vertical;min-height:80px;transition:border-color .2s}
+.rc-textarea:focus{border-color:var(--rose)}
+.tab-btns{display:flex;gap:8px;margin-bottom:20px;flex-wrap:wrap}
+.tab-btn{padding:8px 18px;border-radius:50px;border:1.5px solid #e2cfd5;background:white;font-size:.83rem;color:var(--muted);cursor:pointer;transition:all .2s}
+.tab-btn.active{background:var(--rose);color:white;border-color:var(--rose)}
+
+/* REPORT */
+.report-grid{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:20px}
+.report-stat{background:white;border-radius:16px;padding:20px;text-align:center;border:1px solid rgba(196,118,142,.12)}
+.report-stat .rs-val{font-family:'Cormorant Garamond',serif;font-size:2rem;color:var(--deep)}
+.report-stat .rs-key{font-size:.75rem;color:var(--muted);text-transform:uppercase;letter-spacing:1px;margin-top:4px}
+.report-month-btn{padding:8px 16px;border-radius:50px;border:1.5px solid #e2cfd5;background:white;font-size:.83rem;color:var(--text);cursor:pointer;transition:all .2s}
+.report-month-btn.active{background:var(--rose);color:white;border-color:var(--rose)}
+.pattern-bar-wrap{margin-bottom:12px}
+.pattern-bar-label{font-size:.8rem;color:var(--muted);margin-bottom:4px;display:flex;justify-content:space-between}
+.pattern-bar-bg{background:#f0e0e8;border-radius:4px;height:10px;overflow:hidden}
+.pattern-bar-fill{height:100%;border-radius:4px;background:linear-gradient(90deg,#c4768e,#7a3f55);transition:width 1s ease}
+
+/* INSIGHTS */
+.insight-card{border-radius:16px;padding:20px;margin-bottom:14px;display:flex;gap:14px;align-items:flex-start}
+.insight-card.normal{background:rgba(100,180,150,.1);border:1px solid rgba(100,180,150,.3)}
+.insight-card.warning{background:rgba(255,180,50,.1);border:1px solid rgba(255,180,50,.3)}
+.insight-icon{font-size:1.8rem;flex-shrink:0}
+.insight-title{font-weight:600;font-size:.93rem;color:var(--deep);margin-bottom:4px}
+.insight-desc{font-size:.85rem;color:var(--text);line-height:1.6}
+
+/* REMINDERS */
+.reminder-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+.reminder-card{background:white;border-radius:16px;padding:20px;border:1px solid rgba(196,118,142,.12)}
+.reminder-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:12px}
+.reminder-title{font-weight:600;font-size:.9rem;color:var(--deep);display:flex;align-items:center;gap:7px}
+.toggle{width:44px;height:24px;border-radius:12px;border:none;cursor:pointer;position:relative;transition:background .3s;flex-shrink:0}
+.toggle.on{background:var(--rose)}
+.toggle.off{background:#ddd}
+.toggle::after{content:'';position:absolute;width:18px;height:18px;background:white;border-radius:50%;top:3px;transition:left .3s;box-shadow:0 1px 4px rgba(0,0,0,.2)}
+.toggle.on::after{left:23px}
+.toggle.off::after{left:3px}
+.time-input{padding:7px 10px;border:1.5px solid #e2cfd5;border-radius:8px;font-size:.85rem;color:var(--text);background:white;outline:none;width:100%;margin-top:8px}
+.notif-banner{background:linear-gradient(135deg,rgba(196,118,142,.12),rgba(122,63,85,.06));border:1px solid rgba(196,118,142,.2);border-radius:14px;padding:16px 20px;margin-bottom:20px;display:flex;align-items:center;gap:12px;font-size:.88rem;color:var(--text)}
+
+/* SPINNER */
+.spinner{display:inline-block;width:32px;height:32px;border:3px solid rgba(196,118,142,.3);border-top-color:var(--rose);border-radius:50%;animation:spin .8s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
+.loading-screen{min-height:100vh;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:18px}
+.loading-brand{font-family:'Cormorant Garamond',serif;font-size:2.8rem;font-weight:300;color:var(--deep)}
+.loading-brand span{font-style:italic;color:var(--rose)}
+
+@media(max-width:700px){
+  .auth-wrap{grid-template-columns:1fr}.auth-left{display:none}.auth-right{padding:36px 20px}
+  .tracker-grid,.care-grid,.report-grid,.reminder-grid,.summary-grid{grid-template-columns:1fr}
+  .rc-nav{padding:10px 12px}.nav-links{gap:2px}.nav-btn{padding:5px 8px;font-size:.72rem}
+  .rc-page{padding:20px 14px 50px}.aff-card{padding:28px 20px}
+}
+</style>
+</head>
+<body>
+<div id="root"></div>
+<script type="text/babel">
+const {useState, useEffect, useRef} = React;
+
+// ── Firebase ──
+const FB = {
+  apiKey:"AIzaSyDYae5em7IMGoptI4qVEQvn4EyKgxjjtfM",
+  authDomain:"reenacare-26a60.firebaseapp.com",
+  projectId:"reenacare-26a60",
+  storageBucket:"reenacare-26a60.firebasestorage.app",
+  messagingSenderId:"829407930171",
+  appId:"1:829407930171:web:a7deb8250db2ef69b0791e"
+};
+if(!firebase.apps.length) firebase.initializeApp(FB);
+const auth = firebase.auth();
+const db = firebase.firestore();
+
+// ── Translations ──
+const T = {
+  en:{
+    brand:"ReenaCare", loading:"Loading your safe space...",
+    signIn:"Sign In", createAccount:"Create Account", welcomeBack:"Welcome back 💕",
+    joinUs:"Join ReenaCare 🌸", signInSub:"Sign in to continue your wellness journey.",
+    signUpSub:"Create your free account today.", yourName:"Your name",
+    emailAddr:"Email address", createPw:"Create password", confirmPw:"Confirm password",
+    password:"Password", forgotPw:"Forgot password?", sendReset:"Send Reset Email 💌",
+    resetPw:"Reset Password", resetSub:"Enter your email and we'll send a reset link.",
+    backToSignIn:"← Back to Sign In", dontHaveAcc:"Don't have an account?",
+    alreadyHaveAcc:"Already have an account?", signUpFree:"Sign up free",
+    continueGoogle:"Continue with Google",
+    home:"🏠 Home", tracker:"🌙 Tracker", symptoms:"💊 Symptoms", chat:"💬 Reena",
+    summary:"📋 Health Summary", report:"📄 Report", insights:"📊 Insights",
+    reminders:"⏰ Reminders", signOut:"🚪 Sign Out",
+    goodDay:"Good day", strong:"strong", enough:"enough", loved:"loved",
+    talkReena:"💬 Talk to Reena", trackCycle:"🌙 Track My Cycle",
+    dailyAff:"Daily Affirmations", wordsForSoul:"Words For Your Soul",
+    periodTracker:"🌙 Period Tracker", knowYourBody:"Know Your Body",
+    trackerSub:"Understanding your cycle is the first step to understanding yourself.",
+    lastPeriod:"Last Period Start Date", cycleLength:"Cycle Length",
+    calculate:"✨ Calculate My Cycle", nextPeriod:"Next Period",
+    daysAway:"Days Away", ovulation:"Ovulation", fertileWindow:"Fertile Window",
+    howFeeling:"💊 How Are You Feeling?", personalizedCare:"Personalized Care",
+    symptomsSub:"Tell us what you're experiencing. Your AI care plan is ready.",
+    selectSymptoms:"🌸 Select Your Symptoms", moodToday:"How is your mood today?",
+    getCarePlan:"✨ Get My Personalized Care Plan", checkDiff:"↩️ Check Different Symptoms",
+    preparingPlan:"Reena is preparing your care plan with love... 💕",
+    dietPlan:"🥗 Diet Plan", exerciseTips:"🧘 Exercise Tips",
+    restRecovery:"💤 Rest & Recovery", emotionalCare:"💜 Emotional Care",
+    yourAffirmation:"Your Daily Affirmation from Reena", alwaysHere:"Always here for you",
+    talkPlaceholder:"Talk to Reena... she's listening 💕",
+    healthSummaryTitle:"📋 Health Summary", healthSummaryLabel:"Your Wellness Journal",
+    healthSummarySub:"Log your daily health, moods, and notes. Track your journey.",
+    addNewLog:"+ Add Today's Log", logDate:"Date", logNotes:"How are you feeling today? (notes)",
+    logSymptoms:"Select symptoms", logMood:"Select mood", saveLog:"💾 Save Log",
+    logSaved:"✅ Log saved!", noLogs:"No logs yet. Add your first health log above!",
+    viewAll:"View All Logs", viewRecent:"Recent Logs",
+    healthReport:"📄 Health Report", reportLabel:"Your Monthly Summary",
+    reportSub:"Download your personalized health report as PDF.",
+    selectMonth:"Select Month", downloadPDF:"📥 Download PDF Report",
+    generatingReport:"Generating your report...", reportReady:"Report downloaded! 🌸",
+    noDataReport:"No cycle data found. Please use the Period Tracker first.",
+    cycleInsights:"📊 Cycle Pattern Analyzer", insightsLabel:"AI Health Insights",
+    insightsSub:"AI-powered analysis of your cycle patterns.",
+    analyzePatterns:"🔍 Analyze My Patterns", analyzing:"Analyzing...",
+    remindersTitle:"⏰ Reminder System", remindersLabel:"Smart Reminders",
+    remindersSub:"Customize your health reminders.",
+    enableNotif:"Enable Notifications", notifGranted:"✅ Notifications enabled!",
+    notifDenied:"❌ Notifications blocked.",
+    saveReminders:"💾 Save Reminders", remindersSaved:"✅ Reminders saved!",
+    periodReminder:"🩸 Period Reminder", ovulationReminder:"🌸 Ovulation Reminder",
+    waterReminder:"💧 Water Reminder", exerciseReminder:"🏃 Exercise Reminder",
+    daysBefore:"days before",
+    averageCycle:"Average Cycle", regularCycle:"Regular Cycle ✅",
+    irregularCycle:"Irregular Cycle ⚠️", symptomsLogged:"Symptoms Logged",
+    insightsNoData:"Please log at least 1 cycle in the tracker to see insights.",
+    chatPlaceholder:"Ask Reena anything about your health, cycle, mood...",
+  },
+  ta:{
+    brand:"ரீனாகேர்", loading:"உங்கள் பாதுகாப்பான இடம் ஏற்றப்படுகிறது...",
+    signIn:"உள்நுழைக", createAccount:"கணக்கு உருவாக்கு", welcomeBack:"மீண்டும் வரவேற்கிறோம் 💕",
+    joinUs:"ரீனாகேரில் சேரவும் 🌸", signInSub:"உங்கள் பயணத்தை தொடரவும்.",
+    signUpSub:"இன்றே இலவச கணக்கு உருவாக்கவும்.", yourName:"உங்கள் பெயர்",
+    emailAddr:"மின்னஞ்சல்", createPw:"கடவுச்சொல் உருவாக்கு",
+    confirmPw:"கடவுச்சொல் உறுதிப்படுத்து", password:"கடவுச்சொல்",
+    forgotPw:"கடவுச்சொல் மறந்தீர்களா?", sendReset:"மீட்டமைப்பு அனுப்பு 💌",
+    resetPw:"கடவுச்சொல் மீட்டமை", resetSub:"மின்னஞ்சல் உள்ளிடவும்.",
+    backToSignIn:"← உள்நுழைவுக்கு திரும்பு", dontHaveAcc:"கணக்கு இல்லையா?",
+    alreadyHaveAcc:"ஏற்கனவே கணக்கு உள்ளதா?", signUpFree:"இலவசமாக பதிவு செய்யுங்கள்",
+    continueGoogle:"Google மூலம் தொடர்க",
+    home:"🏠 முகப்பு", tracker:"🌙 கண்காணிப்பு", symptoms:"💊 அறிகுறிகள்",
+    chat:"💬 ரீனா", summary:"📋 சுகாதார குறிப்பு", report:"📄 அறிக்கை",
+    insights:"📊 நுண்ணறிவு", reminders:"⏰ நினைவூட்டல்", signOut:"🚪 வெளியேறு",
+    goodDay:"வணக்கம்", strong:"வலிமையானவள்", enough:"போதுமானவள்", loved:"நேசிக்கப்படுபவள்",
+    talkReena:"💬 ரீனாவிடம் பேசு", trackCycle:"🌙 சுழற்சி கண்காணி",
+    dailyAff:"தினசரி உறுதிமொழிகள்", wordsForSoul:"உங்கள் ஆன்மாவிற்கான வார்த்தைகள்",
+    periodTracker:"🌙 மாதவிடாய் கண்காணிப்பு", knowYourBody:"உங்கள் உடலை அறிந்துகொள்ளுங்கள்",
+    trackerSub:"உங்கள் சுழற்சியை புரிந்துகொள்வது முதல் படி.",
+    lastPeriod:"கடைசி மாதவிடாய் தேதி", cycleLength:"சுழற்சி நீளம்",
+    calculate:"✨ சுழற்சி கணக்கிடு", nextPeriod:"அடுத்த மாதவிடாய்",
+    daysAway:"நாட்கள் எஞ்சியுள்ளன", ovulation:"அண்டவிடுப்பு", fertileWindow:"கருவுறும் காலம்",
+    howFeeling:"💊 இன்று எப்படி உணர்கிறீர்கள்?", personalizedCare:"தனிப்பயன் பராமரிப்பு",
+    symptomsSub:"நீங்கள் அனுபவிப்பதை சொல்லுங்கள். AI திட்டம் தயார்.",
+    selectSymptoms:"🌸 அறிகுறிகளை தேர்வு செய்யவும்", moodToday:"இன்று உங்கள் மனநிலை?",
+    getCarePlan:"✨ என் பராமரிப்பு திட்டம் பெறு", checkDiff:"↩️ வேறு அறிகுறிகள்",
+    preparingPlan:"ரீனா அன்போடு திட்டம் தயாரிக்கிறாள்... 💕",
+    dietPlan:"🥗 உணவுத் திட்டம்", exerciseTips:"🧘 உடற்பயிற்சி குறிப்புகள்",
+    restRecovery:"💤 ஓய்வு & மீட்சி", emotionalCare:"💜 உணர்வு பராமரிப்பு",
+    yourAffirmation:"ரீனாவின் தினசரி உறுதிமொழி", alwaysHere:"எப்போதும் உங்களுக்காக",
+    talkPlaceholder:"ரீனாவிடம் பேசுங்கள்... 💕",
+    healthSummaryTitle:"📋 சுகாதார குறிப்பு", healthSummaryLabel:"உங்கள் ஆரோக்கிய பதிவேடு",
+    healthSummarySub:"தினசரி ஆரோக்கியம், மனநிலை மற்றும் குறிப்புகளை பதிவு செய்யுங்கள்.",
+    addNewLog:"+ இன்றைய பதிவு சேர்", logDate:"தேதி", logNotes:"இன்று எப்படி உணர்கிறீர்கள்?",
+    logSymptoms:"அறிகுறிகளை தேர்வு செய்யவும்", logMood:"மனநிலை தேர்வு செய்யவும்",
+    saveLog:"💾 பதிவு சேமி", logSaved:"✅ பதிவு சேமிக்கப்பட்டது!",
+    noLogs:"பதிவுகள் இல்லை. மேலே உங்கள் முதல் பதிவை சேர்க்கவும்!",
+    viewAll:"அனைத்தும் காண்க", viewRecent:"சமீபத்திய பதிவுகள்",
+    healthReport:"📄 சுகாதார அறிக்கை", reportLabel:"மாதாந்திர சுருக்கம்",
+    reportSub:"PDF ஆக பதிவிறக்கம் செய்யவும்.",
+    selectMonth:"மாதம் தேர்வு செய்யவும்", downloadPDF:"📥 PDF பதிவிறக்கம்",
+    generatingReport:"அறிக்கை தயாரிக்கப்படுகிறது...", reportReady:"அறிக்கை பதிவிறக்கமானது! 🌸",
+    noDataReport:"தரவு இல்லை. முதலில் கண்காணிப்பை பயன்படுத்தவும்.",
+    cycleInsights:"📊 சுழற்சி முறை பகுப்பாய்வு", insightsLabel:"AI சுகாதார நுண்ணறிவு",
+    insightsSub:"AI மூலம் சுழற்சி முறை பகுப்பாய்வு.",
+    analyzePatterns:"🔍 முறைகளை பகுப்பாய்வு செய்", analyzing:"பகுப்பாய்வு செய்கிறோம்...",
+    remindersTitle:"⏰ நினைவூட்டல் அமைப்பு", remindersLabel:"புத்திசாலி நினைவூட்டல்கள்",
+    remindersSub:"உங்கள் நினைவூட்டல்களை தனிப்பயனாக்கவும்.",
+    enableNotif:"அறிவிப்புகளை இயக்கு", notifGranted:"✅ அறிவிப்புகள் இயக்கப்பட்டன!",
+    notifDenied:"❌ அறிவிப்புகள் தடுக்கப்பட்டன.",
+    saveReminders:"💾 நினைவூட்டல்கள் சேமி", remindersSaved:"✅ சேமிக்கப்பட்டன!",
+    periodReminder:"🩸 மாதவிடாய் நினைவூட்டல்", ovulationReminder:"🌸 அண்டவிடுப்பு நினைவூட்டல்",
+    waterReminder:"💧 தண்ணீர் நினைவூட்டல்", exerciseReminder:"🏃 உடற்பயிற்சி நினைவூட்டல்",
+    daysBefore:"நாட்களுக்கு முன்பு",
+    averageCycle:"சராசரி சுழற்சி", regularCycle:"சீரான சுழற்சி ✅",
+    irregularCycle:"ஒழுங்கற்ற சுழற்சி ⚠️", symptomsLogged:"பதிவுசெய்த அறிகுறிகள்",
+    insightsNoData:"நுண்ணறிவுக்கு குறைந்தது 1 சுழற்சி பதிவு செய்யவும்.",
+    chatPlaceholder:"ரீனாவிடம் எதையும் கேளுங்கள்...",
+  },
+  hi:{
+    brand:"रीनाकेयर", loading:"आपका सुरक्षित स्थान लोड हो रहा है...",
+    signIn:"साइन इन", createAccount:"खाता बनाएं", welcomeBack:"वापसी पर स्वागत 💕",
+    joinUs:"रीनाकेयर से जुड़ें 🌸", signInSub:"अपनी यात्रा जारी रखें।",
+    signUpSub:"आज ही मुफ्त खाता बनाएं।", yourName:"आपका नाम",
+    emailAddr:"ईमेल पता", createPw:"पासवर्ड बनाएं", confirmPw:"पासवर्ड की पुष्टि करें",
+    password:"पासवर्ड", forgotPw:"पासवर्ड भूल गए?", sendReset:"रीसेट ईमेल भेजें 💌",
+    resetPw:"पासवर्ड रीसेट", resetSub:"ईमेल दर्ज करें, हम रीसेट लिंक भेजेंगे।",
+    backToSignIn:"← साइन इन पर वापस", dontHaveAcc:"खाता नहीं है?",
+    alreadyHaveAcc:"पहले से खाता है?", signUpFree:"मुफ्त साइन अप",
+    continueGoogle:"Google से जारी रखें",
+    home:"🏠 होम", tracker:"🌙 ट्रैकर", symptoms:"💊 लक्षण", chat:"💬 रीना",
+    summary:"📋 स्वास्थ्य सारांश", report:"📄 रिपोर्ट", insights:"📊 जानकारी",
+    reminders:"⏰ रिमाइंडर", signOut:"🚪 साइन आउट",
+    goodDay:"नमस्ते", strong:"मज़बूत", enough:"पर्याप्त", loved:"प्यारी",
+    talkReena:"💬 रीना से बात करें", trackCycle:"🌙 चक्र ट्रैक करें",
+    dailyAff:"दैनिक प्रतिज्ञाएं", wordsForSoul:"आत्मा के लिए शब्द",
+    periodTracker:"🌙 पीरियड ट्रैकर", knowYourBody:"अपने शरीर को जानें",
+    trackerSub:"अपने चक्र को समझना पहला कदम है।",
+    lastPeriod:"अंतिम पीरियड की तारीख", cycleLength:"चक्र की लंबाई",
+    calculate:"✨ चक्र की गणना करें", nextPeriod:"अगला पीरियड",
+    daysAway:"दिन बाकी", ovulation:"ओव्यूलेशन", fertileWindow:"उपजाऊ समय",
+    howFeeling:"💊 आज कैसा महसूस कर रही हैं?", personalizedCare:"व्यक्तिगत देखभाल",
+    symptomsSub:"बताएं क्या अनुभव कर रही हैं। AI योजना तैयार है।",
+    selectSymptoms:"🌸 लक्षण चुनें", moodToday:"आज का मूड?",
+    getCarePlan:"✨ मेरी देखभाल योजना पाएं", checkDiff:"↩️ अलग लक्षण जांचें",
+    preparingPlan:"रीना प्यार से योजना बना रही है... 💕",
+    dietPlan:"🥗 आहार योजना", exerciseTips:"🧘 व्यायाम सुझाव",
+    restRecovery:"💤 आराम व रिकवरी", emotionalCare:"💜 भावनात्मक देखभाल",
+    yourAffirmation:"रीना की दैनिक प्रतिज्ञा", alwaysHere:"हमेशा आपके लिए",
+    talkPlaceholder:"रीना से बात करें... 💕",
+    healthSummaryTitle:"📋 स्वास्थ्य सारांश", healthSummaryLabel:"आपकी वेलनेस डायरी",
+    healthSummarySub:"अपना दैनिक स्वास्थ्य, मूड और नोट्स दर्ज करें।",
+    addNewLog:"+ आज का लॉग जोड़ें", logDate:"तारीख", logNotes:"आज कैसा महसूस हो रहा है?",
+    logSymptoms:"लक्षण चुनें", logMood:"मूड चुनें",
+    saveLog:"💾 लॉग सेव करें", logSaved:"✅ लॉग सेव हो गया!",
+    noLogs:"कोई लॉग नहीं। ऊपर अपना पहला लॉग जोड़ें!",
+    viewAll:"सभी देखें", viewRecent:"हालिया लॉग",
+    healthReport:"📄 स्वास्थ्य रिपोर्ट", reportLabel:"मासिक सारांश",
+    reportSub:"PDF के रूप में रिपोर्ट डाउनलोड करें।",
+    selectMonth:"महीना चुनें", downloadPDF:"📥 PDF डाउनलोड",
+    generatingReport:"रिपोर्ट तैयार हो रही है...", reportReady:"रिपोर्ट डाउनलोड हो गई! 🌸",
+    noDataReport:"डेटा नहीं मिला। पहले ट्रैकर उपयोग करें।",
+    cycleInsights:"📊 चक्र पैटर्न विश्लेषक", insightsLabel:"AI स्वास्थ्य जानकारी",
+    insightsSub:"AI द्वारा चक्र पैटर्न विश्लेषण।",
+    analyzePatterns:"🔍 मेरे पैटर्न विश्लेषण करें", analyzing:"विश्लेषण हो रहा है...",
+    remindersTitle:"⏰ रिमाइंडर सिस्टम", remindersLabel:"स्मार्ट रिमाइंडर",
+    remindersSub:"अपने रिमाइंडर कस्टमाइज़ करें।",
+    enableNotif:"नोटिफिकेशन चालू करें", notifGranted:"✅ नोटिफिकेशन चालू!",
+    notifDenied:"❌ नोटिफिकेशन ब्लॉक है।",
+    saveReminders:"💾 रिमाइंडर सेव करें", remindersSaved:"✅ रिमाइंडर सेव हो गए!",
+    periodReminder:"🩸 पीरियड रिमाइंडर", ovulationReminder:"🌸 ओव्यूलेशन रिमाइंडर",
+    waterReminder:"💧 पानी रिमाइंडर", exerciseReminder:"🏃 व्यायाम रिमाइंडर",
+    daysBefore:"दिन पहले",
+    averageCycle:"औसत चक्र", regularCycle:"नियमित चक्र ✅",
+    irregularCycle:"अनियमित चक्र ⚠️", symptomsLogged:"दर्ज लक्षण",
+    insightsNoData:"जानकारी के लिए कम से कम 1 चक्र दर्ज करें।",
+    chatPlaceholder:"रीना से कुछ भी पूछें...",
+  }
+};
+
+const AFFIRMATIONS = [
+  "You are not alone. Millions of women stand with you in this moment.",
+  "Your pain is real and your feelings are valid. You are so brave.",
+  "Rest is not weakness — it is wisdom. Take care of yourself today.",
+  "You are stronger than any storm inside you. I believe in you.",
+  "Your body is working hard for you. Be gentle with yourself today.",
+  "You deserve love, rest, peace, and kindness — especially from yourself.",
+  "It's okay to not be okay. What matters is you are still here.",
+  "Your light hasn't gone out — it's just dimmed for today. It will shine again."
+];
+
+const SYMPTOMS = [
+  {id:"cramps",label:"😣 Cramps"},{id:"bloating",label:"🫧 Bloating"},{id:"fatigue",label:"😴 Fatigue"},
+  {id:"headache",label:"🤕 Headache"},{id:"mood_swings",label:"😢 Mood Swings"},{id:"anxiety",label:"😰 Anxiety"},
+  {id:"acne",label:"😞 Acne"},{id:"back_pain",label:"🔙 Back Pain"},{id:"breast_tenderness",label:"💔 Breast Tenderness"},
+  {id:"nausea",label:"🤢 Nausea"},{id:"insomnia",label:"🌙 Insomnia"},{id:"low_energy",label:"⚡ Low Energy"},
+  {id:"stress",label:"😤 Stress"},{id:"heavy_flow",label:"🩸 Heavy Flow"},
+];
+
+const MOODS = [
+  {val:"very sad",emoji:"😭",label:"Sad"},{val:"tired",emoji:"😔",label:"Tired"},
+  {val:"okay",emoji:"😐",label:"Okay"},{val:"irritable",emoji:"😠",label:"Irritable"},
+  {val:"anxious",emoji:"😰",label:"Anxious"},{val:"good",emoji:"🙂",label:"Good"},
+  {val:"happy",emoji:"😊",label:"Happy"},
+];
+
+// ── Helpers ──
+function addDays(d,n){const r=new Date(d);r.setDate(r.getDate()+n);return r;}
+function fmtDate(d,o){return new Date(d).toLocaleDateString("en-US",o||{month:"long",day:"numeric",year:"numeric"});}
+function nowTime(){return new Date().toLocaleTimeString([],{hour:"2-digit",minute:"2-digit"});}
+function getInitials(n){return n?n.split(" ").map(w=>w[0]).join("").toUpperCase().slice(0,2):"U";}
+function pwStrength(pw){if(!pw)return 0;let s=0;if(pw.length>=8)s++;if(/[A-Z]/.test(pw))s++;if(/[0-9]/.test(pw))s++;if(/[^A-Za-z0-9]/.test(pw))s++;return s;}
+function friendlyError(code){
+  const m={
+    "auth/email-already-in-use":"This email is already registered. Please sign in instead.",
+    "auth/invalid-email":"Please enter a valid email address.",
+    "auth/weak-password":"Password must be at least 6 characters.",
+    "auth/user-not-found":"No account found with this email. Did you mean to sign up?",
+    "auth/wrong-password":"Incorrect password. Please try again or reset your password.",
+    "auth/invalid-credential":"Incorrect email or password. Please check and try again.",
+    "auth/too-many-requests":"Too many failed attempts. Please wait a few minutes and try again.",
+    "auth/network-request-failed":"Network error. Please check your internet connection.",
+    "auth/popup-blocked":"Popup was blocked. Please allow popups for this site and try again.",
+    "auth/operation-not-allowed":"Email/password sign-in is not enabled. Please contact support.",
+    "auth/missing-password":"Please enter your password.",
+    "auth/missing-email":"Please enter your email address.",
+  };
+  return m[code]||("Something went wrong: "+code);
+}
+
+// ── Smart Rule-Based Reena Chat (No API needed) ──
+async function callClaude(messages, systemPrompt) {
+  const last = messages[messages.length - 1].content.toLowerCase();
+
+  const responses = [
+    // Greetings
+    { keys: ["hi","hello","hey","hii","helo"], replies: [
+      "Hi beautiful! 💕 I'm Reena, so glad you're here! How are you feeling today? 🌸",
+      "Hello! 🌸 I'm here for you always! What's on your mind today? 💕",
+      "Hey! So happy to see you here 😊 How can I support you today? 🌸"
+    ]},
+    // Cramps / Pain
+    { keys: ["cramp","pain","stomach","hurt","ache","hurting","stomachache"], replies: [
+      "Oh no, I'm so sorry you're in pain 😔 Cramps are really tough. Try a warm compress on your lower belly — it helps so much! Also ginger tea and light stretching can ease the pain. You're so strong 💕🌸",
+      "Cramps are the worst da 😣 Drink warm water, use a heating pad and rest as much as you can. You don't have to push through everything today — be gentle with yourself 🌸",
+      "I feel you 💕 For cramps — try ibuprofen if you can, warm compress, and avoid cold drinks. Dark chocolate actually helps too! You've got this 🌸"
+    ]},
+    // Tired / Fatigue
+    { keys: ["tired","exhausted","fatigue","sleepy","no energy","weak"], replies: [
+      "Feeling tired during your cycle is completely normal 💕 Your body is working so hard! Rest is not laziness — it's healing. Drink iron-rich foods like spinach and rest well tonight 🌸",
+      "I hear you 😔 Fatigue during periods is real and valid. Try to sleep early, eat well, and be kind to yourself today. You don't have to do everything 💕",
+      "Your body needs rest da 🌸 Drink lots of water, eat bananas for energy, and take short breaks. You are doing amazing just by showing up 💕"
+    ]},
+    // Mood / Emotional
+    { keys: ["sad","cry","emotional","mood","upset","low","depressed","feeling down"], replies: [
+      "It's okay to feel this way 💕 Hormones during your cycle can make emotions feel so much bigger. You are not overreacting — your feelings are valid. I'm here with you 🌸",
+      "Aww, sending you the biggest hug 🤗 Feeling emotional before or during your period is so normal. Watch something you love, eat something comforting, and rest. You are loved 💕",
+      "I see you, and I care 🌸 Hormonal mood changes are real. Be extra gentle with yourself today. Journal your feelings, breathe deeply, and remember — this will pass 💕"
+    ]},
+    // Anxiety
+    { keys: ["anxious","anxiety","worry","worried","stress","stressed","nervous"], replies: [
+      "I understand 💕 Anxiety can feel overwhelming, especially around your period. Try box breathing — breathe in 4 counts, hold 4, out 4. You are safe 🌸",
+      "Hey, breathe with me 🌸 In... and out... You are okay. Stress before periods is super common. Try a short walk, chamomile tea, and talk to someone you trust 💕",
+      "Your feelings are valid da 💕 When anxiety hits, try grounding yourself — name 5 things you can see, 4 you can touch. You are stronger than this feeling 🌸"
+    ]},
+    // Period questions
+    { keys: ["period","cycle","late","irregular","missed","flow","bleeding","menstrual"], replies: [
+      "Periods can be irregular for many reasons — stress, diet, sleep changes! A normal cycle is 21-35 days. If it's been more than 60 days, see a doctor 💕 You can use the Tracker tab to monitor your cycle 🌸",
+      "Every woman's cycle is different da 🌸 Irregular periods are common and usually not serious. Stay hydrated, manage stress, and track your cycle using the Tracker here! 💕",
+      "Your cycle is unique to you 💕 Light or heavy flow, early or late — all can be normal. If something feels very different, always check with a doctor. You know your body best 🌸"
+    ]},
+    // PMS
+    { keys: ["pms","premenstrual","before period","bloat","bloating"], replies: [
+      "PMS is so real da 💕 Bloating, mood swings, cravings — all normal! Reduce salt to help bloating, eat magnesium-rich foods like nuts, and be extra kind to yourself 🌸",
+      "Ugh PMS hits different 😔 Try evening primrose oil, reduce caffeine, and do gentle yoga. Your body is preparing for your period — it's working hard for you 💕",
+      "PMS affects so many women 🌸 Eat more fruits and veggies in the days before your period, drink lots of water, and rest when you can. You've got this 💕"
+    ]},
+    // Food / Diet
+    { keys: ["food","eat","diet","nutrition","hungry","craving","chocolate"], replies: [
+      "During your period, your body craves iron and magnesium! 🌸 Eat spinach, lentils, dark chocolate, bananas, and nuts. Avoid too much salt and sugar 💕",
+      "Cravings are your body talking da 💕 Dark chocolate is actually good — it has magnesium! Also try warm soups, ginger tea, and iron-rich foods. Listen to your body 🌸",
+      "Feed yourself with love 🌸 Best period foods: leafy greens, salmon, nuts, dark chocolate, ginger tea, and lots of water. Avoid cold drinks and processed food 💕"
+    ]},
+    // Exercise
+    { keys: ["exercise","workout","yoga","walk","gym","fitness"], replies: [
+      "Light exercise actually helps with cramps da! 🌸 Try gentle yoga, slow walking, or stretching. Avoid intense workouts on heavy flow days — listen to your body 💕",
+      "Movement is medicine 💕 Child's pose, cat-cow stretch, and gentle walks are perfect during your period. Don't push too hard — rest is also exercise for your soul 🌸",
+      "Yes to gentle movement! 🌸 Yoga and walking release endorphins that naturally reduce cramp pain. But on hard days, rest is perfectly okay too 💕"
+    ]},
+    // Sleep
+    { keys: ["sleep","insomnia","can't sleep","awake","rest"], replies: [
+      "Sleep is so important during your cycle 🌸 Try sleeping on your side with a pillow between your knees — it reduces cramp pressure. Chamomile tea before bed helps too 💕",
+      "Your body heals during sleep da 💕 Avoid screens 30 min before bed, keep your room cool, and try deep breathing. You deserve good rest 🌸",
+      "Rest well beautiful 🌸 During your period, your body needs more sleep than usual. Don't feel guilty for sleeping extra — it's healing time 💕"
+    ]},
+    // Motivation
+    { keys: ["motivat","give up","can't do","hopeless","help me","support"], replies: [
+      "Hey, I believe in you so much 💕 You are stronger than you think. Every single day you show up is an act of courage. I'm proud of you 🌸",
+      "You are not alone da 🌸 Whatever you're going through, you have survived 100% of your hard days. This one is no different. I'm right here with you 💕",
+      "You are enough, exactly as you are 🌸 Take it one breath at a time. You don't have to be perfect — you just have to keep going. I believe in you 💕"
+    ]},
+    // Thank you
+    { keys: ["thank","thanks","helpful","love you","you're great"], replies: [
+      "Aww that makes me so happy 🌸 You deserve all the care in the world! I'm always here for you 💕",
+      "Thank YOU for trusting me da 💕 You are so wonderful. Come back anytime you need to talk 🌸",
+      "You're so sweet 🌸 Remember, you are loved and never alone. I'm always here 💕"
+    ]},
+  ];
+
+  // Find matching response
+  for (let i = 0; i < responses.length; i++) {
+    const item = responses[i];
+    for (let j = 0; j < item.keys.length; j++) {
+      if (last.includes(item.keys[j])) {
+        const arr = item.replies;
+        return arr[Math.floor(Math.random() * arr.length)];
+      }
+    }
+  }
+
+  // Default responses
+  const defaults = [
+    "I'm here for you 💕 Can you tell me more about how you're feeling? I want to understand and help you 🌸",
+    "Thank you for sharing with me 🌸 Your feelings matter so much. Tell me more — I'm listening 💕",
+    "I hear you da 💕 You are never alone in this. What else is on your mind? I'm right here 🌸",
+    "Every feeling you have is valid 🌸 I'm here to listen and support you always. Tell me more 💕",
+    "You came to the right place 💕 I'm Reena and I care about you deeply. What's going on? 🌸"
+  ];
+  return defaults[Math.floor(Math.random() * defaults.length)];
+}
+
+// ════════════════════════════════
+// AUTH PAGE
+// ════════════════════════════════
+function AuthPage({onAuth, lang}) {
+  const t = T[lang];
+  const [tab, setTab] = useState("login");
+  const [name, setName] = useState(""); const [email, setEmail] = useState(""); const [pw, setPw] = useState(""); const [cpw, setCpw] = useState("");
+  const [showPw, setShowPw] = useState(false); const [loading, setLoading] = useState(false);
+  const [error, setError] = useState(""); const [success, setSuccess] = useState("");
+  const str = pwStrength(pw);
+  const strLabel = ["","Weak","Fair","Good","Strong"][str];
+  const strCls = ["","weak","weak","fair","strong"][str];
+  const reset = () => { setError(""); setSuccess(""); };
+  const gIcon = <svg width="18" height="18" viewBox="0 0 48 48"><path fill="#EA4335" d="M24 9.5c3.54 0 6.71 1.22 9.21 3.6l6.85-6.85C35.9 2.38 30.47 0 24 0 14.62 0 6.51 5.38 2.56 13.22l7.98 6.19C12.43 13.72 17.74 9.5 24 9.5z"/><path fill="#4285F4" d="M46.98 24.55c0-1.57-.15-3.09-.38-4.55H24v9.02h12.94c-.58 2.96-2.26 5.48-4.78 7.18l7.73 6c4.51-4.18 7.09-10.36 7.09-17.65z"/><path fill="#FBBC05" d="M10.53 28.59c-.48-1.45-.76-2.99-.76-4.59s.27-3.14.76-4.59l-7.98-6.19C.92 16.46 0 20.12 0 24c0 3.88.92 7.54 2.56 10.78l7.97-6.19z"/><path fill="#34A853" d="M24 48c6.48 0 11.93-2.13 15.89-5.81l-7.73-6c-2.18 1.48-4.97 2.29-8.16 2.29-6.26 0-11.57-4.22-13.47-9.91l-7.98 6.19C6.51 42.62 14.62 48 24 48z"/></svg>;
+
+  async function doLogin(e){e.preventDefault();reset();setLoading(true);try{const c=await auth.signInWithEmailAndPassword(email.trim(),pw);onAuth(c.user);}catch(err){setError(friendlyError(err.code));}setLoading(false);}
+  async function doSignup(e){
+    e.preventDefault();reset();
+    if(!name.trim())return setError("Please enter your name.");
+    if(!email.trim())return setError("Please enter your email.");
+    if(pw!==cpw)return setError("Passwords do not match.");
+    if(pw.length<6)return setError("Password must be at least 6 characters.");
+    setLoading(true);
+    try{
+      const c=await auth.createUserWithEmailAndPassword(email.trim(),pw);
+      await c.user.updateProfile({displayName:name.trim()});
+      await c.user.reload();
+      const refreshed = auth.currentUser;
+      onAuth(refreshed);
+    }catch(err){
+      if(err.code==="auth/email-already-in-use"){
+        setError("This email is already registered. Please sign in instead.");
+      } else {
+        setError(friendlyError(err.code));
+      }
+    }
+    setLoading(false);
+  }
+  async function doGoogle(){reset();setLoading(true);try{const p=new firebase.auth.GoogleAuthProvider();p.addScope("email");p.addScope("profile");const c=await auth.signInWithPopup(p);onAuth(c.user);}catch(err){const m=friendlyError(err.code);if(m)setError(m);}setLoading(false);}
+  async function doForgot(e){e.preventDefault();reset();setLoading(true);try{await auth.sendPasswordResetEmail(email);setSuccess("Reset email sent! Check your inbox 💌");}catch(err){setError(friendlyError(err.code));}setLoading(false);}
+
+  return (
+    <div className="auth-wrap">
+      <div className="auth-left">
+        <div className="auth-brand">Reena<span>Care</span></div>
+        <div className="auth-tagline" style={{color:"var(--deep)",opacity:.65,letterSpacing:"3px",fontSize:".82rem",marginTop:"10px",textTransform:"uppercase"}}>Your Women's Wellness Companion</div>
+        <div className="auth-quote">"She is clothed with strength and dignity."<div style={{fontSize:".75rem",opacity:.6,marginTop:"8px"}}>— Proverbs 31:25</div></div>
+        <div className="auth-features">{[["🌙","Track your cycle"],["💊","AI symptom care plans"],["💬","Chat with Reena in EN/Tamil/Hindi"],["📋","Health Summary journal"],["🔒","Private & safe"]].map(([i,tx])=><div key={tx} className="auth-feature"><span>{i}</span>{tx}</div>)}</div>
+      </div>
+      <div className="auth-right">
+        <div className="auth-form">
+          <div style={{fontSize:"2.6rem",marginBottom:"14px",textAlign:"center"}}>🌸</div>
+          {tab!=="forgot"&&<div className="auth-tabs"><button className={"auth-tab"+(tab==="login"?" active":"")} onClick={()=>{setTab("login");reset();}}>{t.signIn}</button><button className={"auth-tab"+(tab==="signup"?" active":"")} onClick={()=>{setTab("signup");reset();}}>{t.createAccount}</button></div>}
+          {error&&<div className="error-box">⚠️ {error}</div>}
+          {success&&<div className="success-box">✅ {success}</div>}
+          {tab==="login"&&<><div className="auth-title">{t.welcomeBack}</div><div className="auth-sub">{t.signInSub}</div><form onSubmit={doLogin}><input className="rc-input" type="email" placeholder={t.emailAddr} value={email} onChange={e=>setEmail(e.target.value)} required/><div className="input-wrap"><input className="rc-input" type={showPw?"text":"password"} placeholder={t.password} value={pw} onChange={e=>setPw(e.target.value)} required/><button type="button" className="eye-btn" onClick={()=>setShowPw(p=>!p)}>{showPw?"🙈":"👁"}</button></div><span className="forgot" onClick={()=>{setTab("forgot");reset();}}>{t.forgotPw}</span><button className="btn-rose" disabled={loading}>{loading?"...":t.signIn+" 🌸"}</button></form><div className="divider"><div className="divider-line"/><span className="divider-text">or</span><div className="divider-line"/></div><button className="google-btn" onClick={doGoogle} disabled={loading}>{gIcon}{t.continueGoogle}</button><div className="auth-footer">{t.dontHaveAcc} <a onClick={()=>{setTab("signup");reset();}}>{t.signUpFree}</a></div></>}
+          {tab==="signup"&&<><div className="auth-title">{t.joinUs}</div><div className="auth-sub">{t.signUpSub}</div><form onSubmit={doSignup}><input className="rc-input" type="text" placeholder={t.yourName} value={name} onChange={e=>setName(e.target.value)} required/><input className="rc-input" type="email" placeholder={t.emailAddr} value={email} onChange={e=>setEmail(e.target.value)} required/><div className="input-wrap"><input className="rc-input" type={showPw?"text":"password"} placeholder={t.createPw} value={pw} onChange={e=>setPw(e.target.value)} required minLength={6}/><button type="button" className="eye-btn" onClick={()=>setShowPw(p=>!p)}>{showPw?"🙈":"👁"}</button></div>{pw&&<><div className="strength">{[1,2,3,4].map(i=><div key={i} className={"strength-bar"+(i<=str?" "+strCls:"")}/>)}</div><div className="strength-label">{strLabel} password</div></>}<input className="rc-input" type={showPw?"text":"password"} placeholder={t.confirmPw} value={cpw} onChange={e=>setCpw(e.target.value)} required/><button className="btn-rose" disabled={loading}>{loading?"...":t.joinUs}</button></form><div className="divider"><div className="divider-line"/><span className="divider-text">or</span><div className="divider-line"/></div><button className="google-btn" onClick={doGoogle} disabled={loading}>{gIcon}{t.continueGoogle}</button><div className="auth-footer">{t.alreadyHaveAcc} <a onClick={()=>{setTab("login");reset();}}>{t.signIn}</a></div></>}
+          {tab==="forgot"&&<><div className="auth-title">{t.resetPw}</div><div className="auth-sub">{t.resetSub}</div><form onSubmit={doForgot}><input className="rc-input" type="email" placeholder={t.emailAddr} value={email} onChange={e=>setEmail(e.target.value)} required/><button className="btn-rose" disabled={loading}>{loading?"...":t.sendReset}</button></form><div className="auth-footer"><a onClick={()=>{setTab("login");reset();}}>{t.backToSignIn}</a></div></>}
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// ════════════════════════════════
+// HOME
+// ════════════════════════════════
+function HomePage({user, setPage, lang}) {
+  const t = T[lang];
+  const [affIdx, setAffIdx] = useState(0);
+  const [fading, setFading] = useState(false);
+  const firstName = (user.displayName||user.email||"Beautiful").split(" ")[0];
+  function goAff(i){setFading(true);setTimeout(()=>{setAffIdx(i);setFading(false);},350);}
+  useEffect(()=>{const ti=setInterval(()=>goAff((affIdx+1)%AFFIRMATIONS.length),5000);return()=>clearInterval(ti);},[affIdx]);
+  return(<>
+    <div className="rc-orb rc-orb1"/><div className="rc-orb rc-orb2"/><div className="rc-orb rc-orb3"/>
+    <section className="rc-hero">
+      <div className="rc-greeting">{t.goodDay}, {firstName} 🌸</div>
+      <h1 className="rc-hero-title">You are <em>{t.strong}</em>,<br/>you are <em>{t.enough}</em>,<br/>you are <em>{t.loved}</em>.</h1>
+      <p className="rc-hero-sub">Every day you show up is an act of courage. This is your safe space — to track, to heal, to feel understood.</p>
+      <div className="cta-group">
+        <button className="btn-rose" onClick={()=>setPage("chat")}>{t.talkReena}</button>
+        <button className="btn-outline" onClick={()=>setPage("tracker")}>{t.trackCycle}</button>
+      </div>
+    </section>
+    <section className="aff-section">
+      <div className="rc-label">{t.dailyAff}</div>
+      <h2 className="section-title">{t.wordsForSoul}</h2>
+      <div className="aff-card"><div className={"aff-text"+(fading?" fading":"")}>{AFFIRMATIONS[affIdx]}</div></div>
+      <div className="aff-nav">{AFFIRMATIONS.map((_,i)=><button key={i} className={"dot"+(i===affIdx?" active":"")} onClick={()=>goAff(i)}/>)}</div>
+    </section>
+    <section className="features">
+      <div className="features-grid">
+        {[
+          {icon:"🌙",name:t.tracker,desc:"Know your cycle, predict your next period.",page:"tracker"},
+          {icon:"💊",name:t.symptoms,desc:"Get a personalized AI care plan.",page:"symptoms"},
+          {icon:"💬",name:t.chat,desc:"Reena listens & responds like a real friend.",page:"chat"},
+          {icon:"📋",name:t.summary,desc:"Log your daily health & mood journal.",page:"summary"},
+          {icon:"📄",name:t.report,desc:"Download your monthly health report.",page:"report"},
+          {icon:"📊",name:t.insights,desc:"AI analysis of your cycle patterns.",page:"insights"},
+        ].map(f=><div key={f.name} className="feature-card" onClick={()=>setPage(f.page)}><div className="feature-icon">{f.icon}</div><div className="feature-name">{f.name}</div><div className="feature-desc">{f.desc}</div></div>)}
+      </div>
+    </section>
+  </>);
+}
+
+// ════════════════════════════════
+// TRACKER
+// ════════════════════════════════
+function TrackerPage({user, lang}) {
+  const t = T[lang];
+  const today = new Date().toISOString().split("T")[0];
+  const [lastPeriod, setLastPeriod] = useState(today);
+  const [cycleLen, setCycleLen] = useState(28);
+  const [result, setResult] = useState(null);
+  const [saved, setSaved] = useState(false);
+
+  async function calculate(){
+    const lp=new Date(lastPeriod),cd=parseInt(cycleLen);
+    const next=addDays(lp,cd),ovul=addDays(lp,cd-14);
+    const fs=addDays(ovul,-3),fe=addDays(ovul,1);
+    const daysUntil=Math.ceil((next-new Date())/(1000*60*60*24));
+    setResult({next,ovul,fs,fe,daysUntil,lp,cd});
+    try{
+      await db.collection("users").doc(user.uid).collection("cycles").add({lastPeriod,cycleLength:cd,nextPeriod:next.toISOString(),createdAt:firebase.firestore.FieldValue.serverTimestamp()});
+      setSaved(true);setTimeout(()=>setSaved(false),3000);
+    }catch(e){console.error(e);}
+  }
+
+  function CalView({lp,cd,next,ovul,fs,fe}){
+    const tn=new Date(),yr=tn.getFullYear(),mo=tn.getMonth();
+    const first=new Date(yr,mo,1),last=new Date(yr,mo+1,0);
+    const ps=new Set();
+    for(let i=0;i<5;i++){ps.add(addDays(lp,i).toDateString());ps.add(addDays(next,i).toDateString());}
+    const days=[];
+    for(let i=0;i<first.getDay();i++)days.push(null);
+    for(let d=1;d<=last.getDate();d++){
+      const date=new Date(yr,mo,d);let cls="cal-day";
+      if(date.toDateString()===tn.toDateString())cls+=" today";
+      if(ps.has(date.toDateString()))cls+=" period";
+      else if(date.toDateString()===ovul.toDateString())cls+=" ovulation";
+      else if(date>=fs&&date<=fe)cls+=" fertile";
+      days.push({d,cls});
+    }
+    return(<div className="rc-card" style={{marginTop:"20px"}}>
+      <div className="rc-card-title">📅 {fmtDate(first,{month:"long",year:"numeric"})}</div>
+      <div className="cal-grid">{["Sun","Mon","Tue","Wed","Thu","Fri","Sat"].map(n=><div key={n} className="cal-day-name">{n}</div>)}{days.map((d,i)=>d?<div key={i} className={d.cls}>{d.d}</div>:<div key={i} className="cal-day"/>)}</div>
+      <div className="cal-legend" style={{marginTop:"12px"}}>
+        <span><span className="legend-dot" style={{background:"var(--rose)"}}/>Period</span>
+        <span><span className="legend-dot" style={{background:"rgba(196,118,142,.4)"}}/>Today</span>
+        <span><span className="legend-dot" style={{background:"rgba(100,180,150,.5)"}}/>Fertile</span>
+        <span><span className="legend-dot" style={{background:"#9b59b6"}}/>Ovulation</span>
+      </div>
+    </div>);
+  }
+
+  return(<div className="rc-page">
+    <div className="rc-page-header"><div className="rc-label">{t.knowYourBody}</div><h1 className="rc-page-title">{t.periodTracker}</h1><p className="rc-page-sub">{t.trackerSub}</p></div>
+    {saved&&<div className="success-box" style={{maxWidth:"400px",margin:"0 auto 20px"}}>✅ Cycle data saved!</div>}
+    <div className="tracker-grid">
+      <div className="rc-card">
+        <div className="rc-card-title">🗓️ {t.lastPeriod}</div>
+        <div className="form-group"><label className="form-label">{t.lastPeriod}</label><input type="date" className="rc-input" style={{marginBottom:0}} value={lastPeriod} max={today} onChange={e=>setLastPeriod(e.target.value)}/></div>
+        <div className="form-group"><label className="form-label">{t.cycleLength}</label>
+          <select className="rc-select" value={cycleLen} onChange={e=>setCycleLen(e.target.value)}>
+            {[20,21,24,26,28,30,31,35].map(n=><option key={n} value={n}>{n} days{n===28?" (avg)":""}</option>)}
+          </select>
+        </div>
+        <button className="btn-rose" onClick={calculate}>{t.calculate}</button>
+        <div className="tip-box" style={{marginTop:"16px"}}><strong>💡</strong> 21–35 days is perfectly normal!</div>
+      </div>
+      <div className="rc-card" style={{display:"flex",alignItems:"center",justifyContent:"center"}}>
+        {result?(<div className="ring-wrap">
+          <div className="ring-container">
+            <svg className="ring-svg" width="150" height="150" viewBox="0 0 150 150">
+              <circle fill="none" stroke="#f0e0e8" strokeWidth="8" cx="75" cy="75" r="65"/>
+              <circle fill="none" stroke="var(--rose)" strokeWidth="8" cx="75" cy="75" r="65" strokeLinecap="round"
+                strokeDasharray="408" strokeDashoffset={408-Math.min((result.cd-Math.max(result.daysUntil,0))/result.cd*408,408)}
+                style={{transition:"stroke-dashoffset 1s ease"}}/>
+            </svg>
+            <div className="ring-text"><div className="ring-days">{Math.max(result.daysUntil,0)}</div><div className="ring-label">{t.daysAway}</div></div>
+          </div>
+        </div>):(<div style={{textAlign:"center",color:"var(--muted)",padding:"24px"}}><div style={{fontSize:"2.8rem",marginBottom:"10px"}}>🌸</div>Enter details to see predictions</div>)}
+      </div>
+    </div>
+    {result&&(<>
+      <div className="rc-card">
+        <div className="rc-card-title">📊 Overview</div>
+        <div className="result-grid">
+          {[{ico:"🌙",val:fmtDate(result.next,{month:"short",day:"numeric"}),key:t.nextPeriod},{ico:"⏰",val:Math.max(result.daysUntil,0),key:t.daysAway},{ico:"🌸",val:fmtDate(result.ovul,{month:"short",day:"numeric"}),key:t.ovulation},{ico:"💚",val:fmtDate(result.fs,{month:"short",day:"numeric"})+"–"+fmtDate(result.fe,{month:"short",day:"numeric"}),key:t.fertileWindow}].map(r=>(
+            <div key={r.key} className="result-pill"><div className="ico">{r.ico}</div><div className="val" style={{fontSize:r.key===t.fertileWindow?"1rem":"1.5rem"}}>{r.val}</div><div className="key">{r.key}</div></div>
+          ))}
+        </div>
+      </div>
+      <CalView lp={result.lp} cd={result.cd} next={result.next} ovul={result.ovul} fs={result.fs} fe={result.fe}/>
+    </>)}
+  </div>);
+}
+
+// ════════════════════════════════
+// SYMPTOMS
+// ════════════════════════════════
+function SymptomsPage({user, lang}) {
+  const t = T[lang];
+  const [sel, setSel] = useState(new Set());
+  const [mood, setMood] = useState("");
+  const [loading, setLoading] = useState(false);
+  const [plan, setPlan] = useState(null);
+  function toggle(id){setSel(p=>{const s=new Set(p);s.has(id)?s.delete(id):s.add(id);return s;});}
+
+  async function analyze(){
+    if(sel.size===0)return;setLoading(true);
+    const syms=[...sel].join(", ");
+    try{await db.collection("users").doc(user.uid).collection("symptoms").add({symptoms:[...sel],mood,date:new Date().toISOString(),createdAt:firebase.firestore.FieldValue.serverTimestamp()});}catch(e){}
+    try{
+      const raw=await callClaude(
+        [{role:"user",content:"Symptoms: "+syms+". Mood: "+(mood||"unspecified")+". Return JSON only, no markdown: {\"message\":\"warm 2 sentence acknowledgement\",\"diet\":[\"tip1\",\"tip2\",\"tip3\",\"tip4\"],\"exercise\":[\"tip1\",\"tip2\",\"tip3\"],\"rest\":[\"tip1\",\"tip2\",\"tip3\"],\"emotional\":[\"tip1\",\"tip2\",\"tip3\"],\"affirmation\":\"one beautiful affirmation sentence\"}"}],
+        "You are ReenaCare wellness expert. Respond ONLY with valid JSON, no backticks, no explanation."
+      );
+      setPlan(JSON.parse(raw.replace(/```json|```/g,"").trim()));
+    }catch{
+      setPlan({message:"I hear you. You're incredibly brave for taking care of yourself today.",diet:["Drink warm ginger tea","Eat iron-rich spinach","Dark chocolate for mood","8 glasses of water"],exercise:["Gentle yoga 10 min","Slow walk outside","Lower back stretches"],rest:["Warm compress on abdomen","8 hours sleep","Short healing naps"],emotional:["Journal 5 minutes","Watch something funny","Call a friend"],affirmation:"Your body is wise, and you are stronger than any pain you feel."});
+    }
+    setLoading(false);
+  }
+
+  return(<div className="rc-page">
+    <div className="rc-page-header"><div className="rc-label">{t.personalizedCare}</div><h1 className="rc-page-title">{t.howFeeling}</h1><p className="rc-page-sub">{t.symptomsSub}</p></div>
+    {!plan&&!loading&&(<div className="rc-card">
+      <div className="rc-card-title">{t.selectSymptoms}</div>
+      <div className="symptom-grid" style={{marginBottom:"22px"}}>{SYMPTOMS.map(s=><div key={s.id} className={"symptom-pill"+(sel.has(s.id)?" selected":"")} onClick={()=>toggle(s.id)}>{s.label}</div>)}</div>
+      <label className="form-label">{t.moodToday}</label>
+      <div className="mood-grid" style={{marginBottom:"24px"}}>{MOODS.map(m=><div key={m.val} className={"mood-option"+(mood===m.val?" selected":"")} onClick={()=>setMood(m.val)}><div style={{fontSize:"1.7rem"}}>{m.emoji}</div><div className="mood-name">{m.label}</div></div>)}</div>
+      <button className="btn-rose" onClick={analyze} disabled={sel.size===0}>{t.getCarePlan}</button>
+    </div>)}
+    {loading&&<div style={{textAlign:"center",padding:"50px"}}><div className="spinner"/><p style={{marginTop:"16px",color:"var(--muted)"}}>{t.preparingPlan}</p></div>}
+    {plan&&(<>
+      <div className="care-message">{plan.message}</div>
+      <div className="care-grid">{[{title:t.dietPlan,key:"diet"},{title:t.exerciseTips,key:"exercise"},{title:t.restRecovery,key:"rest"},{title:t.emotionalCare,key:"emotional"}].map(c=>(<div key={c.key} className="care-card"><div className="care-card-title">{c.title}</div><ul className="care-items">{(plan[c.key]||[]).map((item,i)=><li key={i}>{item}</li>)}</ul></div>))}</div>
+      <div className="aff-banner"><div className="af-text">{plan.affirmation}</div><div className="af-sub">{t.yourAffirmation}</div></div>
+      <div style={{textAlign:"center",marginTop:"20px"}}><button className="btn-outline" onClick={()=>setPlan(null)}>{t.checkDiff}</button></div>
+    </>)}
+  </div>);
+}
+
+// ════════════════════════════════
+// CHAT — Fully Working AI Chat
+// ════════════════════════════════
+function ChatPage({user, lang}) {
+  const t = T[lang];
+  const firstName = (user.displayName||user.email||"Beautiful").split(" ")[0];
+  const [chatLang, setChatLang] = useState(lang);
+  const [messages, setMessages] = useState([{
+    role:"reena",
+    text: lang === "ta"
+      ? "வணக்கம் "+firstName+"! 💕 நான் ரீனா. இன்று நீங்கள் எப்படி உணர்கிறீர்கள்? 🌸"
+      : lang === "hi"
+        ? "नमस्ते "+firstName+"! 💕 मैं रीना हूं। आज आप कैसा महसूस कर रही हैं? 🌸"
+        : "Hi "+firstName+"! 💕 I'm Reena, your personal wellness companion. How are you feeling today? 🌸",
+    time: nowTime()
+  }]);
+  const [input, setInput] = useState("");
+  const [typing, setTyping] = useState(false);
+  const [showQuick, setShowQuick] = useState(true);
+  const historyRef = useRef([]);
+  const endRef = useRef(null);
+  const textareaRef = useRef(null);
+
+  useEffect(()=>{endRef.current?.scrollIntoView({behavior:"smooth"});},[messages,typing]);
+
+  // Language-specific system prompts
+  function getSystemPrompt(lang) {
+    if (lang === "ta") {
+      return `உங்கள் பெயர் ரீனா. நீங்கள் பெண்களுக்கான ஒரு அன்பான, அக்கறையுள்ள AI ஆரோக்கிய நண்பர். 
+IMPORTANT: Always respond in Tamil language (தமிழ்) only.
+- மாதவிடாய் சுழற்சி, அறிகுறிகள், உணர்வுகள் மற்றும் பெண்களின் ஆரோக்கியம் பற்றி பேசுங்கள்
+- முதலில் உணர்வுகளை ஏற்றுக்கொள்ளுங்கள், பின்னர் ஆலோசனை கூறுங்கள்
+- 3-4 வாக்கியங்களில் பதிலளியுங்கள்
+- எப்போதும் அன்பாகவும் ஆதரவாகவும் இருங்கள்`;
+    } else if (lang === "hi") {
+      return `आपका नाम रीना है। आप महिलाओं के लिए एक देखभाल करने वाली AI स्वास्थ्य सहेली हैं।
+IMPORTANT: हमेशा हिंदी भाषा में ही जवाब दें।
+- पीरियड, लक्षण, भावनाओं और महिला स्वास्थ्य के बारे में बात करें
+- पहले भावनाओं को स्वीकार करें, फिर सलाह दें
+- 3-4 वाक्यों में जवाब दें
+- हमेशा गर्मजोशी और सहानुभूति से बात करें`;
+    } else {
+      return `Your name is Reena. You are a warm, caring AI wellness best friend for women.
+- Talk about periods, symptoms, emotions, cycle phases, and women's health
+- Always validate feelings first, then offer gentle advice
+- Keep responses to 3-5 sentences — conversational and warm
+- Be like a knowledgeable best friend, not a doctor
+- If they share pain or struggles, empathize deeply before advising
+- Respond in English`;
+    }
+  }
+
+  // Quick chip messages per language
+  const quickChips = {
+    en: ["I have bad cramps 😣","I feel tired & emotional 😔","Tell me about my cycle 🌙","I need motivation today 💪","I feel anxious 😰","What foods help with PMS? 🥗"],
+    ta: ["எனக்கு வயிற்று வலி இருக்கிறது 😣","நான் சோர்வாக உணர்கிறேன் 😔","என் சுழற்சி பற்றி சொல்லுங்கள் 🌙","எனக்கு ஊக்கம் தேவை 💪","PMS உணவுகள் என்ன? 🥗"],
+    hi: ["मुझे बहुत दर्द हो रहा है 😣","मैं थकी हुई हूं 😔","मेरे चक्र के बारे में बताएं 🌙","आज मुझे प्रेरणा चाहिए 💪","PMS में क्या खाएं? 🥗"]
+  };
+
+  async function send(txt) {
+    const text = (txt || input).trim();
+    if (!text || typing) return;
+    setInput("");
+    setShowQuick(false);
+    if (textareaRef.current) textareaRef.current.style.height = "auto";
+
+    const userMsg = {role:"user", text, time:nowTime()};
+    setMessages(prev => [...prev, userMsg]);
+    historyRef.current.push({role:"user", content:text});
+    setTyping(true);
+
+    try {
+      const reply = await callClaude(
+        historyRef.current.slice(-12),
+        getSystemPrompt(chatLang)
+      );
+      historyRef.current.push({role:"assistant", content:reply});
+      setTyping(false);
+      setMessages(prev => [...prev, {role:"reena", text:reply, time:nowTime()}]);
+    } catch(e) {
+      setTyping(false);
+      console.error("Reena chat error:", e);
+      setMessages(prev => [...prev, {role:"reena", text:"❌ Error: " + e.message, time:nowTime()}]);
+    }
+  }
+
+  function handleLangChange(l) {
+    setChatLang(l);
+    historyRef.current = [];
+    const greeting = l === "ta"
+      ? "வணக்கம் "+firstName+"! 💕 நான் ரீனா. இப்போது தமிழில் பேசலாம். இன்று எப்படி உணர்கிறீர்கள்? 🌸"
+      : l === "hi"
+        ? "नमस्ते "+firstName+"! 💕 अब हम हिंदी में बात करेंगे। आज कैसा महसूस कर रही हैं? 🌸"
+        : "Hi "+firstName+"! 💕 Switching to English. How are you feeling today? 🌸";
+    setMessages([{role:"reena", text:greeting, time:nowTime()}]);
+    setShowQuick(true);
+  }
+
+  return (
+    <div className="chat-page">
+      <div className="chat-topbar">
+        <div className="chat-avatar-big">🌸</div>
+        <div className="chat-info">
+          <div className="chat-name">Reena</div>
+          <div className="chat-status"><span className="status-dot"/>
+            {chatLang === "ta" ? "எப்போதும் உங்களுக்காக" : chatLang === "hi" ? "हमेशा आपके लिए" : t.alwaysHere}
+          </div>
+        </div>
+        <div className="chat-lang-pill">
+          {["en","ta","hi"].map(l => (
+            <button key={l} className={"chat-lang-btn"+(chatLang===l?" active":"")} onClick={()=>handleLangChange(l)}>
+              {l==="en"?"EN":l==="ta"?"தமிழ்":"हिंदी"}
+            </button>
+          ))}
+        </div>
+      </div>
+
+      <div className="messages-area">
+        {messages.map((m,i) => (
+          <div key={i} className={"msg-row "+m.role}>
+            <div className="msg-ava">{m.role==="reena"?"🌸":"👤"}</div>
+            <div>
+              <div className="msg-bub" dangerouslySetInnerHTML={{__html: m.role==="reena"
+                ? m.text.replace(/\n/g,"<br/>")
+                : m.text.replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/\n/g,"<br/>")
+              }}/>
+              <div className="msg-time">{m.time}</div>
+            </div>
+          </div>
+        ))}
+        {typing && (
+          <div className="typing-row">
+            <div className="msg-ava">🌸</div>
+            <div className="typing-bub"><div className="t-dot"/><div className="t-dot"/><div className="t-dot"/></div>
+          </div>
+        )}
+        <div ref={endRef}/>
+      </div>
+
+      {showQuick && (
+        <div className="quick-chips">
+          {(quickChips[chatLang]||quickChips.en).map(q => (
+            <div key={q} className="quick-chip" onClick={()=>send(q)}>{q}</div>
+          ))}
+        </div>
+      )}
+
+      <div className="chat-inputbar">
+        <textarea
+          ref={textareaRef}
+          className="chat-textarea"
+          rows={1}
+          placeholder={chatLang==="ta"?"ரீனாவிடம் எதையும் கேளுங்கள்...":chatLang==="hi"?"रीना से कुछ भी पूछें...":"Ask Reena anything about your health..."}
+          value={input}
+          onChange={e=>{setInput(e.target.value);e.target.style.height="auto";e.target.style.height=Math.min(e.target.scrollHeight,100)+"px";}}
+          onKeyDown={e=>{if(e.key==="Enter"&&!e.shiftKey){e.preventDefault();send();}}}
+        />
+        <button className="send-btn" onClick={()=>send()} disabled={!input.trim()||typing}>
+          <svg viewBox="0 0 24 24" width="17" height="17" fill="white"><path d="M2.01 21L23 12 2.01 3 2 10l15 2-15 2z"/></svg>
+        </button>
+      </div>
+    </div>
+  );
+}
+
+// ════════════════════════════════
+// HEALTH SUMMARY — NEW PAGE
+// ════════════════════════════════
+function HealthSummaryPage({user, lang}) {
+  const t = T[lang];
+  const today = new Date().toISOString().split("T")[0];
+  const [logs, setLogs] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [showForm, setShowForm] = useState(false);
+  const [saving, setSaving] = useState(false);
+  const [saved, setSaved] = useState(false);
+  const [viewMode, setViewMode] = useState("recent");
+
+  // Form state
+  const [logDate, setLogDate] = useState(today);
+  const [logNotes, setLogNotes] = useState("");
+  const [logSymptoms, setLogSymptoms] = useState(new Set());
+  const [logMood, setLogMood] = useState("");
+  const [logEnergy, setLogEnergy] = useState(3);
+  const [logSleep, setLogSleep] = useState("");
+
+  useEffect(()=>{loadLogs();},[user.uid]);
+
+  async function loadLogs(){
+    setLoading(true);
+    // Load from localStorage first
+    try{
+      const local = JSON.parse(localStorage.getItem("reena_logs_"+user.uid)||"[]");
+      if(local.length > 0){
+        const sorted = local.sort((a,b)=>new Date(b.date)-new Date(a.date));
+        setLogs(viewMode==="all" ? sorted.slice(0,50) : sorted.slice(0,7));
+        setLoading(false);
+      }
+    }catch(e){console.error(e);}
+    // Also try Firebase
+    try{
+      const snap = await db.collection("users").doc(user.uid).collection("healthLogs")
+        .orderBy("date","desc").limit(viewMode==="all"?50:7).get();
+      if(!snap.empty){
+        setLogs(snap.docs.map(d=>({id:d.id,...d.data()})));
+      }
+    }catch(e){console.error(e);}
+    setLoading(false);
+  }
+
+  useEffect(()=>{loadLogs();},[viewMode]);
+
+  function toggleSym(id){setLogSymptoms(p=>{const s=new Set(p);s.has(id)?s.delete(id):s.add(id);return s;});}
+
+  async function saveLog(){
+    setSaving(true);
+    const newLog = {
+      id: Date.now().toString(),
+      date:logDate,
+      notes:logNotes,
+      symptoms:[...logSymptoms],
+      mood:logMood,
+      energyLevel:logEnergy,
+      sleepHours:logSleep,
+      createdAt: new Date().toISOString()
+    };
+    // Save to localStorage first (always works)
+    try{
+      const existing = JSON.parse(localStorage.getItem("reena_logs_"+user.uid)||"[]");
+      existing.unshift(newLog);
+      localStorage.setItem("reena_logs_"+user.uid, JSON.stringify(existing));
+    }catch(e){console.error("local save error",e);}
+    // Try Firebase too
+    try{
+      await db.collection("users").doc(user.uid).collection("healthLogs").add({
+        date:logDate,
+        notes:logNotes,
+        symptoms:[...logSymptoms],
+        mood:logMood,
+        energyLevel:logEnergy,
+        sleepHours:logSleep,
+        createdAt:firebase.firestore.FieldValue.serverTimestamp()
+      });
+    }catch(e){console.error("firebase save error",e);}
+    setSaved(true);
+    setShowForm(false);
+    setLogNotes("");setLogSymptoms(new Set());setLogMood("");setLogEnergy(3);setLogSleep("");
+    setTimeout(()=>setSaved(false),3000);
+    loadLogs();
+    setSaving(false);
+  }
+
+  const moodEmoji = {"very sad":"😭","tired":"😔","okay":"😐","irritable":"😠","anxious":"😰","good":"🙂","happy":"😊"};
+  const energyLabel = ["","Very Low","Low","Okay","Good","High"];
+
+  const totalLogs = logs.length;
+  const avgEnergy = logs.length ? (logs.reduce((a,l)=>a+(l.energyLevel||0),0)/logs.length).toFixed(1) : "–";
+  const allSymCount = {};
+  logs.forEach(l=>(l.symptoms||[]).forEach(s=>{allSymCount[s]=(allSymCount[s]||0)+1;}));
+  const topSym = Object.entries(allSymCount).sort((a,b)=>b[1]-a[1]).slice(0,1)[0];
+
+  return(<div className="rc-page">
+    <div className="rc-page-header">
+      <div className="rc-label">{t.healthSummaryLabel}</div>
+      <h1 className="rc-page-title">{t.healthSummaryTitle}</h1>
+      <p className="rc-page-sub">{t.healthSummarySub}</p>
+    </div>
+
+    {saved&&<div className="success-box" style={{maxWidth:"500px",margin:"0 auto 20px"}}>{t.logSaved}</div>}
+
+    {/* Stats */}
+    <div className="summary-grid">
+      <div className="summary-stat"><div className="sv">{totalLogs}</div><div className="sk">Total Logs</div></div>
+      <div className="summary-stat"><div className="sv">{avgEnergy}</div><div className="sk">Avg Energy</div></div>
+      <div className="summary-stat"><div className="sv">{topSym?topSym[0]:"–"}</div><div className="sk">Top Symptom</div></div>
+      <div className="summary-stat"><div className="sv">{logs.filter(l=>l.mood==="happy"||l.mood==="good").length}</div><div className="sk">Good Days</div></div>
+    </div>
+
+    {/* Add Log Button */}
+    {!showForm&&<div style={{textAlign:"center",marginBottom:"20px"}}>
+      <button className="btn-rose" style={{width:"auto",padding:"14px 36px"}} onClick={()=>setShowForm(true)}>{t.addNewLog}</button>
+    </div>}
+
+    {/* Add Log Form */}
+    {showForm&&(
+      <div className="add-log-form">
+        <div className="rc-card-title">📝 {t.addNewLog}</div>
+
+        <div className="form-group">
+          <label className="form-label">{t.logDate}</label>
+          <input type="date" className="rc-input" style={{marginBottom:0}} value={logDate} max={today} onChange={e=>setLogDate(e.target.value)}/>
+        </div>
+
+        <div className="form-group">
+          <label className="form-label">{t.logNotes}</label>
+          <textarea className="rc-textarea" placeholder="Write how you're feeling today, any concerns, or anything on your mind..." value={logNotes} onChange={e=>setLogNotes(e.target.value)}/>
+        </div>
+
+        <div className="form-group">
+          <label className="form-label">{t.logSymptoms}</label>
+          <div className="symptom-grid">{SYMPTOMS.map(s=><div key={s.id} className={"symptom-pill"+(logSymptoms.has(s.id)?" selected":"")} onClick={()=>toggleSym(s.id)}>{s.label}</div>)}</div>
+        </div>
+
+        <div className="form-group">
+          <label className="form-label">{t.logMood}</label>
+          <div className="mood-grid">{MOODS.map(m=><div key={m.val} className={"mood-option"+(logMood===m.val?" selected":"")} onClick={()=>setLogMood(m.val)}><div style={{fontSize:"1.7rem"}}>{m.emoji}</div><div className="mood-name">{m.label}</div></div>)}</div>
+        </div>
+
+        <div className="form-group">
+          <label className="form-label">Energy Level: {energyLabel[logEnergy]}</label>
+          <input type="range" min="1" max="5" value={logEnergy} onChange={e=>setLogEnergy(parseInt(e.target.value))} style={{width:"100%",accentColor:"var(--rose)"}}/>
+          <div style={{display:"flex",justifyContent:"space-between",fontSize:".72rem",color:"var(--muted)",marginTop:"4px"}}>
+            <span>Very Low</span><span>Low</span><span>Okay</span><span>Good</span><span>High</span>
+          </div>
+        </div>
+
+        <div className="form-group">
+          <label className="form-label">Sleep Hours Last Night</label>
+          <input type="number" className="rc-input" style={{marginBottom:0}} placeholder="e.g. 7.5" min="0" max="24" step="0.5" value={logSleep} onChange={e=>setLogSleep(e.target.value)}/>
+        </div>
+
+        <div style={{display:"flex",gap:"12px",marginTop:"8px"}}>
+          <button className="btn-rose" onClick={saveLog} disabled={saving} style={{flex:1}}>
+            {saving?<><div className="spinner" style={{width:"16px",height:"16px",borderWidth:"2px",marginRight:"8px"}}/>Saving...</>:t.saveLog}
+          </button>
+          <button className="btn-outline" onClick={()=>setShowForm(false)} style={{flex:1}}>Cancel</button>
+        </div>
+      </div>
+    )}
+
+    {/* View Toggle */}
+    <div className="tab-btns">
+      <button className={"tab-btn"+(viewMode==="recent"?" active":"")} onClick={()=>setViewMode("recent")}>Recent 7 Days</button>
+      <button className={"tab-btn"+(viewMode==="all"?" active":"")} onClick={()=>setViewMode("all")}>{t.viewAll}</button>
+    </div>
+
+    {/* Logs List */}
+    {loading?(<div style={{textAlign:"center",padding:"30px"}}><div className="spinner"/></div>):(
+      logs.length===0
+        ?(<div className="rc-card" style={{textAlign:"center",padding:"40px",color:"var(--muted)"}}><div style={{fontSize:"3rem",marginBottom:"12px"}}>📋</div><p>{t.noLogs}</p></div>)
+        :(logs.map(log=>{
+          const d = new Date(log.date);
+          return(
+            <div key={log.id} className="log-entry">
+              <div className="log-date-badge">
+                <div className="ld">{d.getDate()}</div>
+                <div className="lm">{d.toLocaleDateString("en",{month:"short"})}</div>
+              </div>
+              <div className="log-body">
+                <div style={{display:"flex",alignItems:"center",gap:"8px",flexWrap:"wrap"}}>
+                  <div className="log-title">{d.toLocaleDateString("en",{weekday:"long"})}</div>
+                  {log.mood&&<span className="log-mood-badge">{moodEmoji[log.mood]||"😐"} {log.mood}</span>}
+                  {log.energyLevel&&<span style={{fontSize:".75rem",color:"var(--muted)"}}>⚡ Energy: {energyLabel[log.energyLevel]}</span>}
+                  {log.sleepHours&&<span style={{fontSize:".75rem",color:"var(--muted)"}}>💤 Sleep: {log.sleepHours}h</span>}
+                </div>
+                {log.notes&&<div style={{fontSize:".86rem",color:"var(--text)",marginTop:"5px",lineHeight:"1.5"}}>{log.notes}</div>}
+                {(log.symptoms||[]).length>0&&(
+                  <div className="log-chips">
+                    {(log.symptoms||[]).map(s=>{
+                      const sym = SYMPTOMS.find(x=>x.id===s);
+                      return <span key={s} className="log-chip">{sym?sym.label:s}</span>;
+                    })}
+                  </div>
+                )}
+              </div>
+            </div>
+          );
+        }))
+    )}
+  </div>);
+}
+
+// ════════════════════════════════
+// HEALTH REPORT
+// ════════════════════════════════
+function ReportPage({user, lang}) {
+  const t = T[lang];
+  const [cycles, setCycles] = useState([]);
+  const [symptoms, setSymptoms] = useState([]);
+  const [healthLogs, setHealthLogs] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [generating, setGenerating] = useState(false);
+  const [msg, setMsg] = useState("");
+  const months=["January","February","March","April","May","June","July","August","September","October","November","December"];
+  const [selMonth, setSelMonth] = useState(new Date().getMonth());
+
+  useEffect(()=>{
+    async function load(){
+      try{
+        const cSnap=await db.collection("users").doc(user.uid).collection("cycles").orderBy("createdAt","desc").limit(10).get();
+        setCycles(cSnap.docs.map(d=>d.data()));
+        const sSnap=await db.collection("users").doc(user.uid).collection("symptoms").orderBy("createdAt","desc").limit(20).get();
+        setSymptoms(sSnap.docs.map(d=>d.data()));
+        const lSnap=await db.collection("users").doc(user.uid).collection("healthLogs").orderBy("date","desc").limit(30).get();
+        setHealthLogs(lSnap.docs.map(d=>d.data()));
+      }catch(e){console.error(e);}
+      setLoading(false);
+    }
+    load();
+  },[user.uid]);
+
+  async function downloadPDF(){
+    if(cycles.length===0&&healthLogs.length===0){setMsg(t.noDataReport);return;}
+    setGenerating(true);
+    try{
+      const {jsPDF}=window.jspdf;const doc=new jsPDF();
+      const name=user.displayName||"User";const monthName=months[selMonth];
+      doc.setFillColor(196,118,142);doc.rect(0,0,210,42,'F');
+      doc.setTextColor(255,255,255);doc.setFontSize(26);doc.setFont("helvetica","bold");doc.text("ReenaCare",14,22);
+      doc.setFontSize(12);doc.setFont("helvetica","normal");doc.text("Health Report — "+monthName+" "+new Date().getFullYear(),14,32);doc.text("User: "+name,14,40);
+      doc.setTextColor(61,32,48);let y=56;
+      // Cycle
+      if(cycles.length>0){
+        doc.setFontSize(15);doc.setFont("helvetica","bold");doc.text("🌙 Cycle Summary",14,y);y+=9;
+        doc.setFontSize(10);doc.setFont("helvetica","normal");
+        const lc=cycles[0];
+        doc.text("Last Period: "+lc.lastPeriod,14,y);y+=6;
+        doc.text("Cycle Length: "+lc.cycleLength+" days",14,y);y+=6;
+        doc.text("Next Period (predicted): "+new Date(lc.nextPeriod).toLocaleDateString(),14,y);y+=6;
+        doc.text("Total cycles logged: "+cycles.length,14,y);y+=12;
+      }
+      // Health Logs
+      if(healthLogs.length>0){
+        doc.setFontSize(15);doc.setFont("helvetica","bold");doc.text("📋 Health Log Summary",14,y);y+=9;
+        doc.setFontSize(10);doc.setFont("helvetica","normal");
+        const avgE=(healthLogs.reduce((a,l)=>a+(l.energyLevel||0),0)/healthLogs.length).toFixed(1);
+        doc.text("Total logs: "+healthLogs.length,14,y);y+=6;
+        doc.text("Average energy level: "+avgE+"/5",14,y);y+=6;
+        const goodDays=healthLogs.filter(l=>l.mood==="happy"||l.mood==="good").length;
+        doc.text("Good mood days: "+goodDays+" out of "+healthLogs.length,14,y);y+=12;
+      }
+      // Symptoms
+      if(symptoms.length>0){
+        doc.setFontSize(15);doc.setFont("helvetica","bold");doc.text("💊 Symptoms Logged",14,y);y+=9;
+        doc.setFontSize(10);doc.setFont("helvetica","normal");
+        const allSyms={};symptoms.forEach(s=>(s.symptoms||[]).forEach(sym=>{allSyms[sym]=(allSyms[sym]||0)+1;}));
+        Object.entries(allSyms).sort((a,b)=>b[1]-a[1]).slice(0,8).forEach(([k,v])=>{doc.text("• "+k+": "+v+"x",14,y);y+=6;});
+        y+=6;
+      }
+      doc.setFillColor(122,63,85);doc.rect(0,280,210,17,'F');
+      doc.setTextColor(255,255,255);doc.setFontSize(9);
+      doc.text("ReenaCare — Your AI Companion for Women's Wellness | Private & Confidential",14,290);
+      doc.save("ReenaCare_Report_"+monthName+"_"+new Date().getFullYear()+".pdf");
+      setMsg(t.reportReady);
+    }catch(e){setMsg("Error generating report.");}
+    setGenerating(false);
+  }
+
+  const allSyms={};symptoms.forEach(s=>(s.symptoms||[]).forEach(sym=>{allSyms[sym]=(allSyms[sym]||0)+1;}));
+  const topSym=Object.entries(allSyms).sort((a,b)=>b[1]-a[1]).slice(0,3);
+
+  return(<div className="rc-page">
+    <div className="rc-page-header"><div className="rc-label">{t.reportLabel}</div><h1 className="rc-page-title">{t.healthReport}</h1><p className="rc-page-sub">{t.reportSub}</p></div>
+    {loading?(<div style={{textAlign:"center",padding:"40px"}}><div className="spinner"/></div>):(<>
+      <div className="report-grid">
+        <div className="report-stat"><div className="rs-val">{cycles.length}</div><div className="rs-key">Cycles Logged</div></div>
+        <div className="report-stat"><div className="rs-val">{symptoms.length}</div><div className="rs-key">{t.symptomsLogged}</div></div>
+        <div className="report-stat"><div className="rs-val">{healthLogs.length}</div><div className="rs-key">Health Logs</div></div>
+        <div className="report-stat"><div className="rs-val">{Object.keys(allSyms).length}</div><div className="rs-key">Unique Symptoms</div></div>
+      </div>
+      {topSym.length>0&&(<div className="rc-card"><div className="rc-card-title">🔝 Top Symptoms</div>
+        {topSym.map(([sym,cnt])=>(<div key={sym} className="pattern-bar-wrap"><div className="pattern-bar-label"><span>{sym}</span><span>{cnt}x</span></div><div className="pattern-bar-bg"><div className="pattern-bar-fill" style={{width:Math.min(cnt*20,100)+"%"}}/></div></div>))}
+      </div>)}
+      <div className="rc-card">
+        <div className="rc-card-title">{t.selectMonth}</div>
+        <div style={{display:"flex",gap:"8px",flexWrap:"wrap",marginBottom:"20px"}}>
+          {months.map((m,i)=><button key={i} className={"report-month-btn"+(selMonth===i?" active":"")} onClick={()=>setSelMonth(i)}>{m.slice(0,3)}</button>)}
+        </div>
+        {msg&&<div className={msg.includes("✅")||msg.includes("!")||msg.includes("downloaded")?"success-box":"error-box"} style={{marginBottom:"16px"}}>{msg}</div>}
+        <button className="btn-rose" onClick={downloadPDF} disabled={generating}>
+          {generating?<><div className="spinner" style={{width:"16px",height:"16px",borderWidth:"2px",marginRight:"8px"}}/>{t.generatingReport}</>:t.downloadPDF}
+        </button>
+      </div>
+    </>)}
+  </div>);
+}
+
+// ════════════════════════════════
+// INSIGHTS
+// ════════════════════════════════
+function InsightsPage({user, lang}) {
+  const t = T[lang];
+  const [cycles, setCycles] = useState([]);
+  const [symptoms, setSymptoms] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [insights, setInsights] = useState(null);
+
+  useEffect(()=>{
+    async function load(){
+      try{
+        const cSnap=await db.collection("users").doc(user.uid).collection("cycles").orderBy("createdAt","desc").limit(6).get();
+        setCycles(cSnap.docs.map(d=>d.data()));
+        const sSnap=await db.collection("users").doc(user.uid).collection("symptoms").get();
+        setSymptoms(sSnap.docs.map(d=>d.data()));
+      }catch(e){}
+      setLoading(false);
+    }
+    load();
+  },[user.uid]);
+
+  function analyze(){
+    if(cycles.length<1){setInsights({error:t.insightsNoData});return;}
+    const cycleLengths=cycles.map(c=>c.cycleLength);
+    const avgLen=Math.round(cycleLengths.reduce((a,b)=>a+b,0)/cycleLengths.length);
+    const maxDiff=Math.max(...cycleLengths)-Math.min(...cycleLengths);
+    const isIrregular=maxDiff>7;
+    const allSyms={};symptoms.forEach(s=>(s.symptoms||[]).forEach(sym=>{allSyms[sym]=(allSyms[sym]||0)+1;}));
+    const frequent=Object.entries(allSyms).filter(([,v])=>v>=2).map(([k])=>k);
+    const cards=[];
+    cards.push(isIrregular
+      ?{type:"warning",icon:"⚠️",title:t.irregularCycle,desc:"Your cycles vary by "+maxDiff+" days. Consider consulting a healthcare provider if this persists."}
+      :{type:"normal",icon:"✅",title:t.regularCycle,desc:"Your average cycle is "+avgLen+" days. Your cycle is regular and healthy!"});
+    if(frequent.includes("cramps")||frequent.includes("heavy_flow"))cards.push({type:"warning",icon:"🩸",title:"Frequent Pain Detected",desc:"You often experience cramps or heavy flow. Warm compresses and iron-rich foods may help."});
+    if(frequent.includes("anxiety")||frequent.includes("mood_swings"))cards.push({type:"warning",icon:"💜",title:"Emotional Patterns",desc:"Mood changes are common before periods. Try journaling, light exercise, or talking to Reena."});
+    if(frequent.includes("fatigue")||frequent.includes("low_energy"))cards.push({type:"normal",icon:"😴",title:"Energy Patterns",desc:"Fatigue is common mid-cycle. Prioritize sleep and B12-rich foods during this time."});
+    if(cards.length===1)cards.push({type:"normal",icon:"🌸",title:"You're Doing Great!",desc:"No concerning patterns detected. Keep tracking for more personalized insights."});
+    setInsights({cards,avgLen,isIrregular,cyclesLogged:cycles.length,symptomsLogged:symptoms.length,cycleLengths});
+  }
+
+  return(<div className="rc-page">
+    <div className="rc-page-header"><div className="rc-label">{t.insightsLabel}</div><h1 className="rc-page-title">{t.cycleInsights}</h1><p className="rc-page-sub">{t.insightsSub}</p></div>
+    {loading?(<div style={{textAlign:"center",padding:"40px"}}><div className="spinner"/></div>):(<>
+      {!insights&&(<div className="rc-card" style={{textAlign:"center",padding:"40px"}}>
+        <div style={{fontSize:"3rem",marginBottom:"16px"}}>🔍</div>
+        <p style={{color:"var(--muted)",marginBottom:"24px"}}>Analyze {cycles.length} cycle{cycles.length!==1?"s":""} & {symptoms.length} symptom records</p>
+        <button className="btn-rose" style={{width:"auto",padding:"14px 32px"}} onClick={analyze}>{t.analyzePatterns}</button>
+      </div>)}
+      {insights?.error&&<div className="error-box">{insights.error}</div>}
+      {insights&&!insights.error&&(<>
+        <div className="report-grid">
+          <div className="report-stat"><div className="rs-val">{insights.avgLen}</div><div className="rs-key">{t.averageCycle} (days)</div></div>
+          <div className="report-stat"><div className="rs-val">{insights.cyclesLogged}</div><div className="rs-key">Cycles Analyzed</div></div>
+          <div className="report-stat"><div className="rs-val">{insights.symptomsLogged}</div><div className="rs-key">{t.symptomsLogged}</div></div>
+          <div className="report-stat"><div className="rs-val">{insights.isIrregular?"⚠️":"✅"}</div><div className="rs-key">Cycle Status</div></div>
+        </div>
+        {insights.cycleLengths.length>1&&(<div className="rc-card"><div className="rc-card-title">📈 Cycle Length History</div>
+          {insights.cycleLengths.map((len,i)=>(<div key={i} className="pattern-bar-wrap"><div className="pattern-bar-label"><span>Cycle {insights.cycleLengths.length-i}</span><span>{len} days</span></div><div className="pattern-bar-bg"><div className="pattern-bar-fill" style={{width:(len/42*100)+"%"}}/></div></div>))}
+        </div>)}
+        <div className="rc-card"><div className="rc-card-title">💡 AI Insights</div>
+          {insights.cards.map((c,i)=>(<div key={i} className={"insight-card "+c.type}><div className="insight-icon">{c.icon}</div><div><div className="insight-title">{c.title}</div><div className="insight-desc">{c.desc}</div></div></div>))}
+        </div>
+        <div style={{textAlign:"center",marginTop:"10px"}}><button className="btn-outline" onClick={()=>setInsights(null)}>🔄 Re-analyze</button></div>
+      </>)}
+    </>)}
+  </div>);
+}
+
+// ════════════════════════════════
+// REMINDERS
+// ════════════════════════════════
+function RemindersPage({user, lang}) {
+  const t = T[lang];
+  const [notifStatus, setNotifStatus] = useState(typeof Notification!=="undefined"?Notification.permission:"default");
+  const [saved, setSaved] = useState(false);
+  const [reminders, setReminders] = useState({
+    period:{on:true,daysBefore:2,time:"08:00"},
+    ovulation:{on:true,daysBefore:0,time:"09:00"},
+    water:{on:false,time:"10:00"},
+    exercise:{on:false,time:"07:00"},
+  });
+
+  useEffect(()=>{
+    db.collection("users").doc(user.uid).collection("settings").doc("reminders").get()
+      .then(d=>{if(d.exists)setReminders(d.data());}).catch(()=>{});
+  },[user.uid]);
+
+  async function requestNotif(){
+    if(!("Notification" in window)){alert("Browser doesn't support notifications.");return;}
+    const perm=await Notification.requestPermission();setNotifStatus(perm);
+    if(perm==="granted")new Notification("ReenaCare 🌸",{body:"Notifications enabled!"});
+  }
+
+  function toggleR(k){setReminders(p=>({...p,[k]:{...p[k],on:!p[k].on}}));}
+  function setTime(k,v){setReminders(p=>({...p,[k]:{...p[k],time:v}}));}
+  function setDays(k,v){setReminders(p=>({...p,[k]:{...p[k],daysBefore:parseInt(v)}}));}
+
+  async function save(){
+    try{
+      await db.collection("users").doc(user.uid).collection("settings").doc("reminders").set({...reminders,updatedAt:firebase.firestore.FieldValue.serverTimestamp()});
+      setSaved(true);setTimeout(()=>setSaved(false),3000);
+    }catch(e){console.error(e);}
+  }
+
+  return(<div className="rc-page">
+    <div className="rc-page-header"><div className="rc-label">{t.remindersLabel}</div><h1 className="rc-page-title">{t.remindersTitle}</h1><p className="rc-page-sub">{t.remindersSub}</p></div>
+    <div className="notif-banner">
+      <span style={{fontSize:"1.5rem"}}>🔔</span>
+      <div style={{flex:1}}>
+        <div style={{fontWeight:600,marginBottom:"4px"}}>Browser Notifications</div>
+        <div style={{fontSize:".83rem",color:"var(--muted)"}}>{notifStatus==="granted"?t.notifGranted:notifStatus==="denied"?t.notifDenied:"Enable to get reminders on time."}</div>
+      </div>
+      {notifStatus!=="granted"&&notifStatus!=="denied"&&<button className="btn-rose" style={{width:"auto",padding:"10px 16px",fontSize:".83rem"}} onClick={requestNotif}>{t.enableNotif}</button>}
+    </div>
+    {saved&&<div className="success-box" style={{marginBottom:"16px"}}>{t.remindersSaved}</div>}
+    <div className="reminder-grid">
+      {[{key:"period",icon:"🩸",title:t.periodReminder,hasDays:true},{key:"ovulation",icon:"🌸",title:t.ovulationReminder,hasDays:true},{key:"water",icon:"💧",title:t.waterReminder,hasDays:false},{key:"exercise",icon:"🏃",title:t.exerciseReminder,hasDays:false}].map(c=>(
+        <div key={c.key} className="reminder-card">
+          <div className="reminder-header">
+            <div className="reminder-title">{c.icon} {c.title}</div>
+            <button className={"toggle "+(reminders[c.key].on?"on":"off")} onClick={()=>toggleR(c.key)}/>
+          </div>
+          {reminders[c.key].on&&(<>
+            <label className="form-label" style={{marginTop:"8px"}}>Reminder Time</label>
+            <input type="time" className="time-input" value={reminders[c.key].time} onChange={e=>setTime(c.key,e.target.value)}/>
+            {c.hasDays&&(<>
+              <label className="form-label" style={{marginTop:"10px"}}>{t.daysBefore}</label>
+              <select className="rc-select" style={{marginTop:"6px"}} value={reminders[c.key].daysBefore} onChange={e=>setDays(c.key,e.target.value)}>
+                {[0,1,2,3,5,7].map(n=><option key={n} value={n}>{n===0?"Same day":n+" "+t.daysBefore}</option>)}
+              </select>
+            </>)}
+          </>)}
+        </div>
+      ))}
+    </div>
+    <div style={{textAlign:"center",marginTop:"24px"}}>
+      <button className="btn-rose" style={{width:"auto",padding:"14px 40px"}} onClick={save}>{t.saveReminders}</button>
+    </div>
+  </div>);
+}
+
+// ════════════════════════════════
+// APP ROOT
+// ════════════════════════════════
+function App() {
+  const [authState, setAuthState] = useState("loading");
+  const [user, setUser] = useState(null);
+  const [page, setPage] = useState("home");
+  const [menuOpen, setMenuOpen] = useState(false);
+  const [lang, setLang] = useState("en");
+  const menuRef = useRef(null);
+
+  useEffect(()=>{
+    const unsub = auth.onAuthStateChanged(u=>{setUser(u);setAuthState(u?"authenticated":"unauthenticated");});
+    return()=>unsub();
+  },[]);
+
+  useEffect(()=>{
+    if(user){
+      db.collection("users").doc(user.uid).collection("settings").doc("preferences").get()
+        .then(d=>{if(d.exists&&d.data().lang)setLang(d.data().lang);}).catch(()=>{});
+    }
+  },[user]);
+
+  async function changeLang(l){
+    setLang(l);
+    if(user){
+      try{await db.collection("users").doc(user.uid).collection("settings").doc("preferences").set({lang:l},{merge:true});}catch(e){}
+    }
+  }
+
+  useEffect(()=>{
+    function h(e){if(menuRef.current&&!menuRef.current.contains(e.target))setMenuOpen(false);}
+    document.addEventListener("mousedown",h);return()=>document.removeEventListener("mousedown",h);
+  },[]);
+
+  const t = T[lang];
+
+  if(authState==="loading") return(
+    <div className="loading-screen">
+      <div style={{fontSize:"3rem"}}>🌸</div>
+      <div className="loading-brand">Reena<span>Care</span></div>
+      <div style={{fontSize:".84rem",color:"var(--muted)",letterSpacing:"2px"}}>{t.loading}</div>
+      <div className="spinner" style={{marginTop:"16px"}}/>
+    </div>
+  );
+
+  if(authState==="unauthenticated") return <AuthPage onAuth={u=>{setUser(u);setAuthState("authenticated");}} lang={lang}/>;
+
+  const pages=[
+    {p:"home",label:t.home},{p:"tracker",label:t.tracker},{p:"symptoms",label:t.symptoms},
+    {p:"chat",label:t.chat},{p:"summary",label:t.summary},{p:"report",label:t.report},
+    {p:"insights",label:t.insights},{p:"reminders",label:t.reminders}
+  ];
+
+  return(<div>
+    <nav className="rc-nav">
+      <div className="rc-brand">Reena<span>Care</span></div>
+      <div className="nav-links">
+        {pages.map(n=><button key={n.p} className={"nav-btn"+(page===n.p?" active":"")} onClick={()=>setPage(n.p)}>{n.label}</button>)}
+        <div className="lang-switcher" style={{marginLeft:"6px"}}>
+          {["en","ta","hi"].map(l=><button key={l} className={"lang-btn"+(lang===l?" active":"")} onClick={()=>changeLang(l)}>{l==="en"?"EN":l==="ta"?"தமிழ்":"हिंदी"}</button>)}
+        </div>
+        <div ref={menuRef} className="nav-avatar" onClick={()=>setMenuOpen(p=>!p)}>
+          {user.photoURL?<img src={user.photoURL} alt="av" style={{width:"100%",height:"100%",borderRadius:"50%",objectFit:"cover"}}/>:getInitials(user.displayName||user.email)}
+          {menuOpen&&(<div className="user-menu">
+            <div className="user-menu-name"><strong>{user.displayName||"User"}</strong>{user.email}</div>
+            {pages.slice(0,5).map(n=><div key={n.p} className="user-menu-item" onClick={()=>{setMenuOpen(false);setPage(n.p);}}>{n.label}</div>)}
+            <div className="user-menu-item danger" onClick={()=>{setMenuOpen(false);auth.signOut();}}>{t.signOut}</div>
+          </div>)}
+        </div>
+      </div>
+    </nav>
+    {page==="home"&&<HomePage user={user} setPage={setPage} lang={lang}/>}
+    {page==="tracker"&&<TrackerPage user={user} lang={lang}/>}
+    {page==="symptoms"&&<SymptomsPage user={user} lang={lang}/>}
+    {page==="chat"&&<ChatPage user={user} lang={lang}/>}
+    {page==="summary"&&<HealthSummaryPage user={user} lang={lang}/>}
+    {page==="report"&&<ReportPage user={user} lang={lang}/>}
+    {page==="insights"&&<InsightsPage user={user} lang={lang}/>}
+    {page==="reminders"&&<RemindersPage user={user} lang={lang}/>}
+  </div>);
+}
+
+ReactDOM.render(<App/>, document.getElementById("root"));
+</script>
+</body>
+</html>
